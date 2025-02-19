@@ -1,5 +1,5 @@
 const express = require("express");
-const { obtenerVentas, crearVenta, actualizarVenta, eliminarVenta } = require("../controllers/ventas.controller");
+const { obtenerVentas, crearVenta, actualizarVenta, eliminarVenta } = require("../controllers/ventasController");
 
 const router = express.Router();
 

@@ -6,17 +6,18 @@ require("dotenv").config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Conectar a MongoDB
+// Connect to MongoDB
 connectDB();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
-// Rutas
-app.use("/api/ventas", require("./routes/ventas.routes"));
+// Routes
+app.use("/api/sales", require("./routes/sales.routes"));
 
-// Iniciar servidor
+
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

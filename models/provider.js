@@ -30,4 +30,4 @@ const providerSchema = new Schema({
     }
 })
 
-export default model('Provider', providerSchema)
+module.exports = mongoose.model('Provider', providerSchema)

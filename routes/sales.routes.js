@@ -1,11 +1,11 @@
-const express = require("express");
-const { getSales, createSale, updateSale, deleteSale } = require("../controllers/sales.controller");
+import express from "express";
+import { getSales, createSale, updateSale, deleteSale } from "../controllers/sales.controller.js";
 
 const router = express.Router();
 
-router.get("/", getSales); // Get all sales
-router.post("/", createSale); // Create a new sale
-router.put("/:id", updateSale); // Update a sale
-router.delete("/:id", deleteSale); // Delete a sale
+router.get("/", getSales);
+router.post("/", createSale);
+router.put("/:id", updateSale);
+router.delete("/:id", deleteSale);
 
-module.exports = router;
+export default router;

@@ -1,12 +1,14 @@
-import Provider from '../models/provider.js';
+import Provider from "../models/provider.js";
 
 // Method GET: Get all providers
 export async function getProviders(req, res) {
     try {
+        console.log("Fetching all providers...");
         const providers = await Provider.find();
-        res.status(200).json({ providers });
+        res.status(200).json({ message: "Providers retrieved successfully", data: providers });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching providers' });
+        console.error("Error fetching providers:", error);
+        res.status(500).json({ message: "Error fetching providers", error: error.message });
     }
 }
 
@@ -14,25 +16,30 @@ export async function getProviders(req, res) {
 export async function getOneProvider(req, res) {
     const { id } = req.params;
     try {
+        console.log(`Fetching provider with ID: ${id}`);
         const provider = await Provider.findById(id);
-        if (!provider) return res.status(404).json({ message: 'Provider not found' });
-        res.status(200).json(provider);
+        if (!provider) {
+            console.warn(`Provider with ID ${id} not found`);
+            return res.status(404).json({ message: "Provider not found" });
+        }
+        res.status(200).json({ message: "Provider retrieved successfully", data: provider });
     } catch (error) {
-        res.status(500).json({ message: 'Error fetching provider' });
+        console.error("Error fetching provider:", error);
+        res.status(500).json({ message: "Error fetching provider", error: error.message });
     }
 }
 
 // Method POST: Create a new provider
 export async function postProvider(req, res) {
     const { name, contact_number, address, email, personal_phone, status } = req.body;
-    let msg = 'Provider created successfully';
     try {
+        console.log("Creating a new provider:", req.body);
         const newProvider = new Provider({ name, contact_number, address, email, personal_phone, status });
         await newProvider.save();
-        res.status(201).json(newProvider);
+        res.status(201).json({ message: "Provider created successfully", data: newProvider });
     } catch (error) {
-        msg = 'Error creating provider';
-        res.status(500).json({ message: msg });
+        console.error("Error creating provider:", error);
+        res.status(500).json({ message: "Error creating provider", error: error.message });
     }
 }
 
@@ -40,31 +47,37 @@ export async function postProvider(req, res) {
 export async function putProvider(req, res) {
     const { id } = req.params;
     const { name, contact_number, address, email, personal_phone, status } = req.body;
-    let msg = 'Provider updated successfully';
     try {
+        console.log(`Updating provider with ID: ${id}`, req.body);
         const updatedProvider = await Provider.findByIdAndUpdate(
             id,
             { name, contact_number, address, email, personal_phone, status },
             { new: true }
         );
-        if (!updatedProvider) return res.status(404).json({ message: 'Provider not found' });
-        res.status(200).json(updatedProvider);
+        if (!updatedProvider) {
+            console.warn(`Provider with ID ${id} not found`);
+            return res.status(404).json({ message: "Provider not found" });
+        }
+        res.status(200).json({ message: "Provider updated successfully", data: updatedProvider });
     } catch (error) {
-        msg = 'Error updating provider';
-        res.status(500).json({ message: msg });
+        console.error("Error updating provider:", error);
+        res.status(500).json({ message: "Error updating provider", error: error.message });
     }
 }
 
 // Method DELETE: Delete a provider
 export async function deleteProvider(req, res) {
     const { id } = req.params;
-    let msg = 'Provider deleted successfully';
     try {
+        console.log(`Deleting provider with ID: ${id}`);
         const deletedProvider = await Provider.findByIdAndDelete(id);
-        if (!deletedProvider) return res.status(404).json({ message: 'Provider not found' });
-        res.status(200).json({ message: msg });
+        if (!deletedProvider) {
+            console.warn(`Provider with ID ${id} not found`);
+            return res.status(404).json({ message: "Provider not found" });
+        }
+        res.status(200).json({ message: "Provider deleted successfully" });
     } catch (error) {
-        msg = 'Error deleting provider';
-        res.status(500).json({ message: msg });
+        console.error("Error deleting provider:", error);
+        res.status(500).json({ message: "Error deleting provider", error: error.message });
     }
 }

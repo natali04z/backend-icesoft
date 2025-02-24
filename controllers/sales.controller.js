@@ -1,44 +1,35 @@
-const Sale = require("../models/Sales");
-
-// Get all sales
-const getSales = async (req, res) => {
+export const getSales = async (req, res) => {
   try {
-    const sales = await Sale.find();
-    res.json(sales);
+      // Tu lógica aquí
+      res.json({ message: "Get all sales" });
   } catch (error) {
-    res.status(500).json({ error: "Error retrieving sales" });
+      res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Create a new sale
-const createSale = async (req, res) => {
+export const createSale = async (req, res) => {
   try {
-    const newSale = new Sale(req.body);
-    await newSale.save();
-    res.json(newSale);
+      // Tu lógica aquí
+      res.json({ message: "Sale created" });
   } catch (error) {
-    res.status(500).json({ error: "Error creating sale" });
+      res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Update a sale
-const updateSale = async (req, res) => {
+export const updateSale = async (req, res) => {
   try {
-    const updatedSale = await Sale.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    res.json(updatedSale);
+      // Tu lógica aquí
+      res.json({ message: "Sale updated" });
   } catch (error) {
-    res.status(500).json({ error: "Error updating sale" });
+      res.status(500).json({ error: "Internal server error" });
   }
 };
 
-// Delete a sale
-const deleteSale = async (req, res) => {
+export const deleteSale = async (req, res) => {
   try {
-    await Sale.findByIdAndDelete(req.params.id);
-    res.json({ message: "Sale deleted" });
+      // Tu lógica aquí
+      res.json({ message: "Sale deleted" });
   } catch (error) {
-    res.status(500).json({ error: "Error deleting sale" });
+      res.status(500).json({ error: "Internal server error" });
   }
 };
-
-module.exports = { getSales, createSale, updateSale, deleteSale };

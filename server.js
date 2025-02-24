@@ -1,7 +1,9 @@
-const express = require("express");
-const cors = require("cors");
-const connectDB = require("./config/db");
-require("dotenv").config();
+import express, { json } from "express";
+import cors from "cors";
+import connectDB from "./config/db.js";
+import "dotenv/config";
+
+import salesRoutes from './routes/sales.routes.js'
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -11,13 +13,13 @@ connectDB();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
 // Routes
-app.use("/api/sales", require("./routes/sales.routes"));
+app.use("/api/sales", salesRoutes);
 
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(` Server running at http://localhost:${PORT}`);
 });

@@ -1,4 +1,4 @@
-import Sale from "../models/Sales.js"; // Asegúrate de importar el modelo correctamente
+import Sale from "../models/Sales.js"; 
 
 export const getSales = async (req, res) => {
   try {

@@ -42,7 +42,7 @@ export const getOneCategory = async (req, res) => {
 
 // Create a new category
 export const postCategory = async (req, res) => {
-    console.log("📥 Received Data:", req.body); // 👀 Ver en la terminal qué datos llegan
+    console.log("Received Data:", req.body); // 👀 Ver en la terminal qué datos llegan
 
     try {
         const { name, description, status } = req.body;
@@ -86,7 +86,7 @@ export const putCategory = async (req, res) => {
 
 // Delete a category
 export const deleteCategory = async (req, res) => {
-    console.log("🗑 Deleting category:", req.params.id);
+    console.log("Deleting category:", req.params.id);
 
     try {
         const deletedCategory = await Category.findOneAndDelete({ id: req.params.id });
@@ -97,7 +97,7 @@ export const deleteCategory = async (req, res) => {
 
         res.status(200).json({ message: "Category deleted successfully" });
     } catch (error) {
-        console.error("❌ Error deleting category:", error);
+        console.error("Error deleting category:", error);
         res.status(500).json({ message: "Error deleting category" });
     }
 };

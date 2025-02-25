@@ -1,4 +1,4 @@
-import { model, Schema, Types } from "mongoose"; // ✅ Importar Types
+import { model, Schema, Types} from "mongoose";
 
 const productSchema = new Schema({
     id: {
@@ -13,8 +13,8 @@ const productSchema = new Schema({
         trim: true
     },
     category: {
-        type: Types.ObjectId,
-        ref: "Category",
+        type: Types.ObjectId, // Relación con el modelo Category
+        ref: 'Category', // Hace referencia al modelo 'Category'
         required: true
     },
     price: {
@@ -31,4 +31,4 @@ const productSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("Product", productSchema);
+export default model('Product', productSchema);

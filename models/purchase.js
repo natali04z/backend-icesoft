@@ -15,10 +15,10 @@ const purchaseSchema = new Schema({
     purchaseDate: {
         type: Date,
         required: true,
-        default: Date.now
+        default: Date.now // Fecha automática si no se proporciona
     },
     provider: {
-        type: Types.ObjectId,
+        type: Types.ObjectId, // Relación con el modelo Provider
         ref: "Provider",
         required: true
     },
@@ -33,4 +33,4 @@ const purchaseSchema = new Schema({
     }
 });
 
-module.exports = mongoose.model("Purchase", purchaseSchema);
+export default model("Purchase", purchaseSchema);

@@ -12,10 +12,6 @@ import productRoutes from "./routes/product.routes.js";
 import providerRoutes from "./routes/provider.routes.js";
 import purchaseRoutes from "./routes/purchase.routes.js";
 
-
-
-
-
 const app = express();
 const PORT = process.env.PORT || 3001;
 

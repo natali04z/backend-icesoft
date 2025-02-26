@@ -65,7 +65,7 @@ export const putCategory = async (req, res) => {
         const updatedCategory = await Category.findOneAndUpdate(
             { _id: req.params.id }, // Cambia "id" por "_id"
             req.body,
-            { new: true, runValidators: true } // Agrega "runValidators" para validar los datos
+            { new: true, runValidators: true }
         );
 
         if (!updatedCategory) {

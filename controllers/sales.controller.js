@@ -10,8 +10,7 @@ const getSales = async (req, res) => {
   }
 };
 
-// Create a new sale
-const createSale = async (req, res) => {
+export const createSale = async (req, res) => {
   try {
     const newSale = new Sale(req.body);
     await newSale.save();
@@ -21,8 +20,7 @@ const createSale = async (req, res) => {
   }
 };
 
-// Update a sale
-const updateSale = async (req, res) => {
+export const updateSale = async (req, res) => {
   try {
     const updatedSale = await Sale.findByIdAndUpdate(req.params.id, req.body, { new: true });
     res.json(updatedSale);
@@ -31,8 +29,7 @@ const updateSale = async (req, res) => {
   }
 };
 
-// Delete a sale
-const deleteSale = async (req, res) => {
+export const deleteSale = async (req, res) => {
   try {
     await Sale.findByIdAndDelete(req.params.id);
     res.json({ message: "Sale deleted" });

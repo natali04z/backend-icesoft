@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const SaleSchema = new mongoose.Schema({
   customer: { type: String, required: true },
@@ -8,5 +8,6 @@ const SaleSchema = new mongoose.Schema({
   date: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("Sales", SaleSchema);
-
+//  Exportación correcta para ES Modules
+const Sale = mongoose.model("Sales", SaleSchema);
+export default Sale;

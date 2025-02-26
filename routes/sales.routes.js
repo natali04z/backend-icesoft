@@ -1,7 +1,7 @@
 const express = require("express");
 const { getSales, createSale, updateSale, deleteSale } = require("../controllers/sales.controller");
 
-const router = express.Router();
+const router = Router();
 
 router.get("/", getSales); // Get all sales
 router.post("/", createSale); // Create a new sale

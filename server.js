@@ -7,11 +7,11 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Connect to MongoDB
-connectDB();
+dbConnect();
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(json());
 
 // Routes
 app.use("/api/sales", require("./routes/sales.routes"));

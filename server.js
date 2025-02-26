@@ -21,7 +21,8 @@ connectDB();
 
 // Middleware
 app.use(cors());
-app.use(json());
+app.use(express.json());
+
 
 // Routes
 app.use("/api/sales", salesRoutes);

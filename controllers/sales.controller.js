@@ -1,7 +1,7 @@
-import Sale from "../models/Sales.js"; 
+import Sale from "../models/Sales.js";
 
 // Get all sales
-const getSales = async (req, res) => {
+export const getSales = async (req, res) => {
   try {
     const sales = await Sale.find();
     res.json(sales);
@@ -37,5 +37,3 @@ export const deleteSale = async (req, res) => {
     res.status(500).json({ error: "Error deleting sale" });
   }
 };
-
-module.exports = { getSales, createSale, updateSale, deleteSale };

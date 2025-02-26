@@ -16,7 +16,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Connect to MongoDB
-connectDB();
+dbConnect();
 
 // Middleware
 app.use(cors());
@@ -31,5 +31,5 @@ app.use("/api/reports", reportsRoutes);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(` Server running at http://localhost:${PORT}`);
+  console.log(`🚀 Server running at http://localhost:${PORT}`);
 });

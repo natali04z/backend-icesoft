@@ -1,23 +1,32 @@
-const express = require("express");
-const cors = require("cors");
-const connectDB = require("./config/db");
-require("dotenv").config();
+import express from "express";
+import cors from "cors";
+import dbConnect from "./database/config.js";
+
+// Import routes
+import salesRoutes from "./routes/sales.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import productRoutes from "./routes/product.routes.js";
+import providerRoutes from "./routes/provider.routes.js";
+import purchaseRoutes from "./routes/purchase.routes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Connect to MongoDB
-connectDB();
+dbConnect();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 
 // Routes
-app.use("/api/sales", require("./routes/sales.routes"));
-
+app.use("/api/sales", salesRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/providers", providerRoutes);
+app.use("/api/purchases", purchaseRoutes);
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at http://localhost:${PORT}`);
+  console.log(`Server running at http://localhost:${PORT}`);
 });

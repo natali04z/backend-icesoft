@@ -1,6 +1,5 @@
 import Category from "../models/category.js";
 
-// Generate Category ID in format Ca01, Ca02, Ca03...
 async function generateCategoryId() {
     const lastCategory = await Category.findOne().sort({ id: -1 });
 
@@ -42,8 +41,6 @@ export const getOneCategory = async (req, res) => {
 
 // Create a new category
 export const postCategory = async (req, res) => {
-    console.log("Received Data:", req.body); // 👀 Ver en la terminal qué datos llegan
-
     try {
         const { name, description, status } = req.body;
 
@@ -55,7 +52,7 @@ export const postCategory = async (req, res) => {
         const newCategory = new Category({ id, name, description, status });
 
         await newCategory.save();
-        res.status(201).json({ id: newCategory.id, ...newCategory._doc });
+        res.status(201).json({ message: "Category created successfully", id: newCategory.id, ...newCategory._doc });
     } catch (error) {
         console.error("Error creating category:", error);
         res.status(500).json({ message: "Error creating category" });
@@ -64,32 +61,27 @@ export const postCategory = async (req, res) => {
 
 // Update a category
 export const putCategory = async (req, res) => {
-    console.log("🛠 Updating category:", req.params.id);
-
     try {
         const updatedCategory = await Category.findOneAndUpdate(
-            { id: req.params.id },
+            { _id: req.params.id }, // Cambia "id" por "_id"
             req.body,
-            { new: true }
+            { new: true, runValidators: true } // Agrega "runValidators" para validar los datos
         );
 
         if (!updatedCategory) {
             return res.status(404).json({ message: "Category not found" });
         }
-
         res.status(200).json(updatedCategory);
     } catch (error) {
         console.error("Error updating category:", error);
-        res.status(500).json({ message: "Error updating category" });
+        res.status(500).json({ message: "Error updating category", error });
     }
 };
 
 // Delete a category
 export const deleteCategory = async (req, res) => {
-    console.log("Deleting category:", req.params.id);
-
     try {
-        const deletedCategory = await Category.findOneAndDelete({ id: req.params.id });
+        const deletedCategory = await Category.findOneAndDelete({ _id: req.params.id });
 
         if (!deletedCategory) {
             return res.status(404).json({ message: "Category not found" });

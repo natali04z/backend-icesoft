@@ -1,7 +1,6 @@
 import Product from "../models/product.js";
 import Category from "../models/category.js";
 
-// Generate Product ID in format Pr01, Pr02, Pr03...
 async function generateProductId() {
     const lastProduct = await Product.findOne().sort({ _id: -1 });
 
@@ -18,7 +17,7 @@ async function generateProductId() {
 export const getProducts = async (req, res) => {
     try {
         const products = await Product.find()
-            .select("id name price stock minimumStock")
+            .select("id name price stock minimumStock status")
             .populate("category", "name");
 
         res.status(200).json(products);
@@ -33,7 +32,7 @@ export const getProductById = async (req, res) => {
     try {
         const { id } = req.params;
         const product = await Product.findById(id)
-            .select("id name price stock minimumStock")
+            .select("id name price stock minimumStock status")
             .populate("category", "name");
 
         if (!product) {
@@ -50,19 +49,27 @@ export const getProductById = async (req, res) => {
 // Create a new product
 export const postProduct = async (req, res) => {
     try {
-        const { name, category, price, stock, minimumStock } = req.body;
+        const { name, category, price, stock, minimumStock, status } = req.body;
 
-        if (!name || !category || !price || stock === undefined || minimumStock === undefined) {
+        if (!name || !category || !price || stock === undefined || minimumStock === undefined || !status) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const existingCategory = await Category.findById(category);
+        const existingCategory = await Category.findOne({ name: category });
         if (!existingCategory) {
             return res.status(404).json({ message: "Category not found" });
         }
 
         const id = await generateProductId();
-        const newProduct = new Product({ id, name, category, price, stock, minimumStock });
+        const newProduct = new Product({
+            id,
+            name,
+            category: existingCategory._id,
+            price,
+            stock,
+            minimumStock,
+            status
+        });
 
         await newProduct.save();
         res.status(201).json({ message: "Product created successfully", product: newProduct });
@@ -76,18 +83,20 @@ export const postProduct = async (req, res) => {
 export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, category, price, stock, minimumStock } = req.body;
+        const { name, category, price, stock, minimumStock, status } = req.body;
 
+        let categoryId = null;
         if (category) {
-            const existingCategory = await Category.findById(category);
+            const existingCategory = await Category.findOne({ name: category });
             if (!existingCategory) {
                 return res.status(404).json({ message: "Category not found" });
             }
+            categoryId = existingCategory._id;
         }
 
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
-            { name, category, price, stock, minimumStock },
+            { name, category: categoryId, price, stock, minimumStock, status},
             { new: true }
         )
             .select("id name price stock minimumStock")

@@ -155,4 +155,4 @@ export const deletePurchase = async (req, res) => {
         console.error("Error deleting purchase:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
-};
+}

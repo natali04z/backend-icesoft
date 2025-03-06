@@ -1,18 +1,23 @@
-const User = require('../models/user');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+import User, { findOne } from '../models/user';
+import { genSalt, hash, compare } from 'bcryptjs';
+import { sign } from 'jsonwebtoken';
+import dotenv from 'dotenv';
 
-exports.register = async (req, res) => {
+dotenv.config();
+
+const SECRET = process.env.SECRET
+
+export async function register(req, res) {
     try {
         const { name, email, password } = req.body;
 
         // Verificar si el usuario ya existe
-        let user = await User.findOne({ email });
+        let user = await findOne({ email });
         if (user) return res.status(400).json({ message: "El usuario ya existe" });
 
         // Encriptar contraseña
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(password, salt);
+        const salt = await genSalt(10);
+        const hashedPassword = await hash(password, salt);
 
         // Crear usuario
         user = new User({ name, email, password: hashedPassword });
@@ -22,25 +27,25 @@ exports.register = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Error en el servidor", error });
     }
-};
+}
 
-exports.login = async (req, res) => {
+export async function login(req, res) {
     try {
         const { email, password } = req.body;
 
         // Verificar si el usuario existe
-        const user = await User.findOne({ email });
+        const user = await findOne({ email });
         if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
 
         // Verificar contraseña
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
 
         // Generar token
-        const token = jwt.sign({ id: user._id }, "secreto", { expiresIn: "1h" });
+        const token = sign({ id: user._id }, SECRET, { expiresIn: "1h" });
 
         res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
     } catch (error) {
         res.status(500).json({ message: "Error en el servidor", error });
     }
-};
+}

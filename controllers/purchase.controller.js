@@ -19,7 +19,7 @@ export const getPurchases = async (req, res) => {
     try {
         console.log("Fetching all purchases...");
         const purchases = await Purchase.find()
-            .select("id total details")
+            .select("id total details purchaseDate")
             .populate("product", "name price")
             .populate("provider", "name contact_number");
 
@@ -38,7 +38,7 @@ export const getPurchaseById = async (req, res) => {
         console.log(`Fetching purchase with ID: ${id}`);
 
         const purchase = await Purchase.findById(id)
-            .select("id total details")
+            .select("id total details purchaseDate")
             .populate("product", "name price")
             .populate("provider", "name contact_number");
 
@@ -55,39 +55,39 @@ export const getPurchaseById = async (req, res) => {
     }
 };
 
-// POST: Create a new purchase
+// POST
 export const postPurchase = async (req, res) => {
     try {
-        console.log("Creating a new purchase:", req.body);
         const { product, provider, total, details } = req.body;
 
-        if (![product, provider, details].every(Boolean)) {
-            console.warn("Missing required fields");
+        if (!product || !provider || total === undefined || !details) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const existingProduct = await Product.findById(product);
+        const existingProduct = await Product.findOne({ name: product });
         if (!existingProduct) {
-            console.warn(`Product with ID ${product} not found`);
             return res.status(404).json({ message: "Product not found" });
         }
 
-        const existingProvider = await Provider.findById(provider);
+        const existingProvider = await Provider.findOne({ name: provider });
         if (!existingProvider) {
-            console.warn(`Provider with ID ${provider} not found`);
             return res.status(404).json({ message: "Provider not found" });
         }
 
         const id = await generatePurchaseId();
+        const newPurchase = new Purchase({
+            id,
+            product: existingProduct._id,
+            provider: existingProvider._id,
+            total,
+            details
+        });
 
-        const newPurchase = new Purchase({ id, product, provider, total, details });
         await newPurchase.save();
-
-        console.log("Purchase created successfully:", newPurchase);
-        res.status(201).json({ message: "Purchase created successfully", data: newPurchase });
+        res.status(201).json({ message: "Purchase created successfully", purchase: newPurchase });
     } catch (error) {
         console.error("Error creating purchase:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -95,44 +95,51 @@ export const postPurchase = async (req, res) => {
 export const updatePurchase = async (req, res) => {
     try {
         const { id } = req.params;
-        console.log(`Updating purchase with ID: ${id}`, req.body);
-        const { product, provider, total, details } = req.body;
+        const { product, provider, purchaseDate, total, details } = req.body;
 
-        if (product) {
-            const existingProduct = await Product.findById(product);
-            if (!existingProduct) {
-                console.warn(`Product with ID ${product} not found`);
-                return res.status(404).json({ message: "Product not found" });
-            }
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid purchase ID" });
         }
 
+        let productId = null;
+        if (product) {
+            const existingProduct = await Product.findOne({ name: product });
+            if (!existingProduct) {
+                return res.status(404).json({ message: "Product not found" });
+            }
+            productId = existingProduct._id;
+        }
+
+        let providerId = null;
         if (provider) {
-            const existingProvider = await Provider.findById(provider);
+            const existingProvider = await Provider.findOne({ name: provider });
             if (!existingProvider) {
-                console.warn(`Provider with ID ${provider} not found`);
                 return res.status(404).json({ message: "Provider not found" });
             }
+            providerId = existingProvider._id;
+        }
+
+        if (total !== undefined && (typeof total !== "number" || total <= 0)) {
+            return res.status(400).json({ message: "Total must be a positive number" });
         }
 
         const updatedPurchase = await Purchase.findByIdAndUpdate(
             id,
-            { product, provider, total, details },
-            { new: true }
+            { product: productId, provider: providerId, purchaseDate, total, details },
+            { new: true, runValidators: true }
         )
-            .select("id total details")
-            .populate("product", "name price")
-            .populate("provider", "name contact_number");
+            .select("product provider purchaseDate total details")
+            .populate("product", "name")
+            .populate("provider", "name");
 
         if (!updatedPurchase) {
-            console.warn(`Purchase with ID ${id} not found`);
             return res.status(404).json({ message: "Purchase not found" });
         }
 
-        console.log("Purchase updated successfully:", updatedPurchase);
-        res.status(200).json({ message: "Purchase updated successfully", data: updatedPurchase });
+        res.status(200).json({ message: "Purchase updated successfully", purchase: updatedPurchase });
     } catch (error) {
         console.error("Error updating purchase:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
@@ -155,4 +162,4 @@ export const deletePurchase = async (req, res) => {
         console.error("Error deleting purchase:", error);
         res.status(500).json({ message: "Server error", error: error.message });
     }
-}
+};

@@ -45,8 +45,27 @@ export const postProvider = async (req, res) => {
     try {
         const { name, contact_number, address, email, personal_phone, status } = req.body;
 
+        // Validations
         if (!name || !contact_number || !address || !email || !personal_phone || !status) {
             return res.status(400).json({ message: "All fields are required" });
+        }
+        if (!name) {
+            return res.status(400).json({ message: "Name is required" });
+        }   
+        if (!/^\d{10,}$/.test(contact_number)) {
+            return res.status(400).json({ message: "Contact number must be at least 10 digits" });
+        }
+        if (!/^\d{10,}$/.test(personal_phone)) {
+            return res.status(400).json({ message: "Personal phone must be at least 10 digits" });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+        if (address.length < 5 || address.length > 100) {
+            return res.status(400).json({ message: "Address must be between 5 and 100 characters" });
+        }
+        if (!["active", "inactive"].includes(status.toLowerCase())) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
         }
 
         const existingProvider = await Provider.findOne({ email });
@@ -68,8 +87,30 @@ export const postProvider = async (req, res) => {
 // Update a provider
 export const putProvider = async (req, res) => {
     try {
+        const { name, contact_number, address, email, personal_phone, status } = req.body;
+
+        // Validations (Only validate if the fields are provided)
+        if (!name) {
+            return res.status(400).json({ message: "Name is required" });
+        }        
+        if (contact_number && !/^\d{10,}$/.test(contact_number)) {
+            return res.status(400).json({ message: "Contact number must be at least 10 digits" });
+        }
+        if (personal_phone && !/^\d{10,}$/.test(personal_phone)) {
+            return res.status(400).json({ message: "Personal phone must be at least 10 digits" });
+        }
+        if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+        if (address && (address.length < 5 || address.length > 100)) {
+            return res.status(400).json({ message: "Address must be between 5 and 100 characters" });
+        }
+        if (status && !["active", "inactive"].includes(status.toLowerCase())) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
+        }
+
         const updatedProvider = await Provider.findOneAndUpdate(
-            { id: req.params.id }, // Usamos "id" en lugar de "_id"
+            { id: req.params.id },
             req.body,
             { new: true, runValidators: true }
         );

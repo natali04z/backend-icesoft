@@ -1,4 +1,5 @@
 import Category from "../models/category.js";
+import mongoose from "mongoose";
 
 async function generateCategoryId() {
     const lastCategory = await Category.findOne().sort({ id: -1 });
@@ -26,7 +27,11 @@ export const getCategories = async (req, res) => {
 // Get category by ID
 export const getOneCategory = async (req, res) => {
     try {
-        const category = await Category.findOne({ id: req.params.id });
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid category ID" });
+        }
+
+        const category = await Category.findById(req.params.id);
 
         if (!category) {
             return res.status(404).json({ message: "Category not found" });
@@ -48,6 +53,18 @@ export const postCategory = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        if (name.length < 3 || name.length > 50) {
+            return res.status(400).json({ message: "Category name must be between 3 and 50 characters" });
+        }
+
+        if (description.length < 5 || description.length > 200) {
+            return res.status(400).json({ message: "Description must be between 5 and 200 characters" });
+        }
+
+        if (!["active", "inactive"].includes(status)) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
+        }
+
         const id = await generateCategoryId();
         const newCategory = new Category({ id, name, description, status });
 
@@ -62,8 +79,26 @@ export const postCategory = async (req, res) => {
 // Update a category
 export const putCategory = async (req, res) => {
     try {
-        const updatedCategory = await Category.findOneAndUpdate(
-            { _id: req.params.id }, // Cambia "id" por "_id"
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid category ID" });
+        }
+
+        const { name, description, status } = req.body;
+
+        if (name && (name.length < 3 || name.length > 50)) {
+            return res.status(400).json({ message: "Category name must be between 3 and 50 characters" });
+        }
+
+        if (description && (description.length < 5 || description.length > 200)) {
+            return res.status(400).json({ message: "Description must be between 5 and 200 characters" });
+        }
+
+        if (status && !["active", "inactive"].includes(status)) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
+        }
+
+        const updatedCategory = await Category.findByIdAndUpdate(
+            req.params.id,
             req.body,
             { new: true, runValidators: true }
         );
@@ -71,17 +106,22 @@ export const putCategory = async (req, res) => {
         if (!updatedCategory) {
             return res.status(404).json({ message: "Category not found" });
         }
+
         res.status(200).json(updatedCategory);
     } catch (error) {
         console.error("Error updating category:", error);
-        res.status(500).json({ message: "Error updating category", error });
+        res.status(500).json({ message: "Error updating category" });
     }
 };
 
 // Delete a category
 export const deleteCategory = async (req, res) => {
     try {
-        const deletedCategory = await Category.findOneAndDelete({ _id: req.params.id });
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: "Invalid category ID" });
+        }
+
+        const deletedCategory = await Category.findByIdAndDelete(req.params.id);
 
         if (!deletedCategory) {
             return res.status(404).json({ message: "Category not found" });

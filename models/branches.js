@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const SucursalSchema = new mongoose.Schema({
-  idSucursal: { type: mongoose.Schema.Types.ObjectId, auto: true },
-  nombre: { type: String, required: true },
-  direccion: { type: String, required: true },
-  telefono: { type: String, required: true }
+const BranchSchema = new mongoose.Schema({
+  idBranch: { type: mongoose.Schema.Types.ObjectId, auto: true },
+  name: { type: String, required: true },
+  address: { type: String, required: true },
+  phone: { type: String, required: true }
 });
 
-module.exports = mongoose.model('Sucursal', SucursalSchema);
+export default mongoose.model('Branch', BranchSchema);

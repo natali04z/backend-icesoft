@@ -1,10 +1,12 @@
-const express = require('express');
-const SucursalController = require('../controllers/branches.controller');
+import { Router } from 'express';
+import { getBranches, getBranchesById, postBranches, updateBranches, deleteBranches } from '../controllers/branch.controller.js';
 
-const router = express.Router();
-const sucursalController = new SucursalController();
+const router = Router();
 
-// Usar las rutas definidas en el controller
-router.use('/sucursales', sucursalController.getRouter());
+router.get('/', getBranches);
+router.get('/:id', getBranchesById);
+router.post('/', postBranches);
+router.put('/:id', updateBranches);
+router.delete('/:id', deleteBranches);
 
-module.exports = router;
+export default router;

@@ -1,5 +1,6 @@
 import Product from "../models/product.js";
 import Category from "../models/category.js";
+import mongoose from "mongoose";
 
 async function generateProductId() {
     const lastProduct = await Product.findOne().sort({ _id: -1 });
@@ -16,6 +17,10 @@ async function generateProductId() {
 // Get all products
 export const getProducts = async (req, res) => {
     try {
+        if (!req.user.permissions.includes("view_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const products = await Product.find()
             .select("id name price stock minimumStock status")
             .populate("category", "name");
@@ -30,7 +35,16 @@ export const getProducts = async (req, res) => {
 // Get product by ID
 export const getProductById = async (req, res) => {
     try {
+        if (!req.user.permissions.includes("view_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
         const product = await Product.findById(id)
             .select("id name price stock minimumStock status")
             .populate("category", "name");
@@ -49,10 +63,30 @@ export const getProductById = async (req, res) => {
 // Create a new product
 export const postProduct = async (req, res) => {
     try {
+        if (!req.user.permissions.includes("create_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { name, category, price, stock, minimumStock, status } = req.body;
 
-        if (!name || !category || !price || stock === undefined || minimumStock === undefined || !status) {
+        if (!name || !category || price === undefined || stock === undefined || minimumStock === undefined || !status) {
             return res.status(400).json({ message: "All fields are required" });
+        }
+
+        if (typeof price !== "number" || price <= 0) {
+            return res.status(400).json({ message: "Price must be a positive number" });
+        }
+
+        if (!Number.isInteger(stock) || stock < 0) {
+            return res.status(400).json({ message: "Stock must be a non-negative integer" });
+        }
+
+        if (!Number.isInteger(minimumStock) || minimumStock < 0) {
+            return res.status(400).json({ message: "Minimum stock must be a non-negative integer" });
+        }
+
+        if (!["active", "inactive"].includes(status)) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
         }
 
         const existingCategory = await Category.findOne({ name: category });
@@ -82,8 +116,16 @@ export const postProduct = async (req, res) => {
 // Update a product
 export const updateProduct = async (req, res) => {
     try {
+        if (!req.user.permissions.includes("edit_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
         const { name, category, price, stock, minimumStock, status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
 
         let categoryId = null;
         if (category) {
@@ -96,8 +138,8 @@ export const updateProduct = async (req, res) => {
 
         const updatedProduct = await Product.findByIdAndUpdate(
             id,
-            { name, category: categoryId, price, stock, minimumStock, status},
-            { new: true }
+            { name, category: categoryId, price, stock, minimumStock, status },
+            { new: true, runValidators: true }
         )
             .select("id name price stock minimumStock")
             .populate("category", "name");
@@ -116,7 +158,16 @@ export const updateProduct = async (req, res) => {
 // Delete a product
 export const deleteProduct = async (req, res) => {
     try {
+        if (!req.user.permissions.includes("delete_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
         const deletedProduct = await Product.findByIdAndDelete(id);
 
         if (!deletedProduct) {

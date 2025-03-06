@@ -1,51 +1,76 @@
-import User, { findOne } from '../models/user';
-import { genSalt, hash, compare } from 'bcryptjs';
-import { sign } from 'jsonwebtoken';
-import dotenv from 'dotenv';
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import User from "../models/user.js";
+import dotenv from "dotenv";
 
 dotenv.config();
 
-const SECRET = process.env.SECRET
-
-export async function register(req, res) {
+// **REGISTER USER**
+export const registerUser = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { name, email, password, role } = req.body;
 
-        // Verificar si el usuario ya existe
-        let user = await findOne({ email });
-        if (user) return res.status(400).json({ message: "El usuario ya existe" });
+        if (!name || !email || !password || !role) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
 
-        // Encriptar contraseña
-        const salt = await genSalt(10);
-        const hashedPassword = await hash(password, salt);
+        const existingUser = await User.findOne({ email });
+        if (existingUser) {
+            return res.status(400).json({ message: "Email already in use" });
+        }
 
-        // Crear usuario
-        user = new User({ name, email, password: hashedPassword });
-        await user.save();
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = new User({ name, email, password: hashedPassword, role });
 
-        res.status(201).json({ message: "Usuario registrado con éxito" });
+        await newUser.save();
+        res.status(201).json({ message: "User registered successfully" });
+
     } catch (error) {
-        res.status(500).json({ message: "Error en el servidor", error });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
 }
 
-export async function login(req, res) {
+// **LOGIN USER**
+export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Verificar si el usuario existe
-        const user = await findOne({ email });
-        if (!user) return res.status(400).json({ message: "Usuario no encontrado" });
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
 
-        // Verificar contraseña
-        const isMatch = await compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: "Contraseña incorrecta" });
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
 
-        // Generar token
-        const token = sign({ id: user._id }, SECRET, { expiresIn: "1h" });
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ message: "Invalid credentials" });
+        }
 
-        res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
+        const token = jwt.sign(
+            { id: user._id, role: user.role },
+            process.env.JWT_SECRET,
+            { expiresIn: "1d" }
+        );
+
+        res.json({ token });
+
     } catch (error) {
-        res.status(500).json({ message: "Error en el servidor", error });
+        res.status(500).json({ message: "Server error", error: error.message });
     }
-}
+};
+
+// **GET AUTHENTICATED USER**
+export const getAuthenticatedUser = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select("-password");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+};

@@ -7,7 +7,7 @@ import { authenticateUser, authorizePermission } from "../middlewares/auth.middl
 const router = Router();
 
 router.get("/", authenticateUser, authorizePermission("view_users"), getUsers);
-router.get("/:id", authenticateUser, authorizePermission("view_users"), getOneUser);
+router.get("/:id", authenticateUser, authorizePermission("view_users_id"), getOneUser);
 router.put("/:id", authenticateUser, authorizePermission("update_users"), putUser);
 router.delete("/:id", authenticateUser, authorizePermission("delete_users"), deleteUser);
 

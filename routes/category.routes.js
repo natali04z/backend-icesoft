@@ -5,7 +5,7 @@ import { authenticateUser, authorizePermission } from "../middlewares/auth.middl
 const router = Router();
 
 router.get("/", authenticateUser, authorizePermission("view_categories"), getCategories);
-router.get("/:id", authenticateUser, authorizePermission("view_categories"), getOneCategory);
+router.get("/:id", authenticateUser, authorizePermission("view_categories_id"), getOneCategory);
 router.post("/", authenticateUser, authorizePermission("create_categories"), postCategory);
 router.put("/:id", authenticateUser, authorizePermission("update_categories"), putCategory);
 router.delete("/:id", authenticateUser, authorizePermission("delete_categories"), deleteCategory);

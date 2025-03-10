@@ -6,8 +6,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // **REGISTER USER**
-import jwt from 'jsonwebtoken';
-// Asegúrate de tener importado jwt y configurada una clave secreta
 
 export const registerUser = async (req, res) => {
     try {

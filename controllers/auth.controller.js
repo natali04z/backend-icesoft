@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // **REGISTER USER**
+import jwt from 'jsonwebtoken';
+// Asegúrate de tener importado jwt y configurada una clave secreta
+
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
@@ -23,13 +26,30 @@ export const registerUser = async (req, res) => {
         const newUser = new User({ name, email, password: hashedPassword, role });
 
         await newUser.save();
-        res.status(201).json({ message: "User registered successfully" });
+        
+        // Generar el token JWT
+        const token = jwt.sign(
+            { userId: newUser._id, email: newUser.email, role: newUser.role },
+            process.env.JWT_SECRET, // Asegúrate de tener esta variable en tu .env
+            { expiresIn: '24h' } // Puedes ajustar el tiempo de expiración
+        );
+
+        // Devolver el token junto con la información del usuario
+        res.status(201).json({
+            message: "User registered successfully",
+            token,
+            user: {
+                id: newUser._id,
+                name: newUser.name,
+                email: newUser.email,
+                role: newUser.role
+            }
+        });
 
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
-
 // **LOGIN USER**
 export const loginUser = async (req, res) => {
     try {

@@ -5,9 +5,9 @@ import { authenticateUser, authorizePermission } from "../middlewares/auth.middl
 const router = Router();
 
 router.get("/", authenticateUser, authorizePermission("view_products"), getProducts);
-router.get("/:id",authenticateUser, authorizePermission("view_products"), getProductById);
-router.post("/", authenticateUser, authorizePermission("view_products"),postProduct);
-router.put("/:id", authenticateUser, authorizePermission("view_products"), updateProduct);
-router.delete("/:id", authenticateUser, authorizePermission("view_products"),deleteProduct);
+router.get("/:id",authenticateUser, authorizePermission("view_products_id"), getProductById);
+router.post("/", authenticateUser, authorizePermission("create_products"),postProduct);
+router.put("/:id", authenticateUser, authorizePermission("update_products"), updateProduct);
+router.delete("/:id", authenticateUser, authorizePermission("delete_products"),deleteProduct);
 
 export default router

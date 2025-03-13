@@ -55,7 +55,7 @@ export const getPurchaseById = async (req, res) => {
     }
 };
 
-// POST
+// POST: Create new purchase
 export const postPurchase = async (req, res) => {
     try {
         const { product, provider, total, details } = req.body;
@@ -64,12 +64,20 @@ export const postPurchase = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        const existingProduct = await Product.findOne({ name: product });
+        if (!mongoose.Types.ObjectId.isValid(product)) {
+            return res.status(400).json({ message: "Invalid product ID" });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(provider)) {
+            return res.status(400).json({ message: "Invalid provider ID" });
+        }
+
+        const existingProduct = await Product.findById(product);
         if (!existingProduct) {
             return res.status(404).json({ message: "Product not found" });
         }
 
-        const existingProvider = await Provider.findOne({ name: provider });
+        const existingProvider = await Provider.findById(provider);
         if (!existingProvider) {
             return res.status(404).json({ message: "Provider not found" });
         }
@@ -77,8 +85,8 @@ export const postPurchase = async (req, res) => {
         const id = await generatePurchaseId();
         const newPurchase = new Purchase({
             id,
-            product: existingProduct._id,
-            provider: existingProvider._id,
+            product,
+            provider,
             total,
             details
         });
@@ -101,33 +109,43 @@ export const updatePurchase = async (req, res) => {
             return res.status(400).json({ message: "Invalid purchase ID" });
         }
 
-        let productId = null;
+        let updateFields = {};
+
         if (product) {
-            const existingProduct = await Product.findOne({ name: product });
+            if (!mongoose.Types.ObjectId.isValid(product)) {
+                return res.status(400).json({ message: "Invalid product ID" });
+            }
+            const existingProduct = await Product.findById(product);
             if (!existingProduct) {
                 return res.status(404).json({ message: "Product not found" });
             }
-            productId = existingProduct._id;
+            updateFields.product = product;
         }
 
-        let providerId = null;
         if (provider) {
-            const existingProvider = await Provider.findOne({ name: provider });
+            if (!mongoose.Types.ObjectId.isValid(provider)) {
+                return res.status(400).json({ message: "Invalid provider ID" });
+            }
+            const existingProvider = await Provider.findById(provider);
             if (!existingProvider) {
                 return res.status(404).json({ message: "Provider not found" });
             }
-            providerId = existingProvider._id;
+            updateFields.provider = provider;
         }
 
-        if (total !== undefined && (typeof total !== "number" || total <= 0)) {
-            return res.status(400).json({ message: "Total must be a positive number" });
+        if (purchaseDate) updateFields.purchaseDate = purchaseDate;
+        if (total !== undefined) {
+            if (typeof total !== "number" || total <= 0) {
+                return res.status(400).json({ message: "Total must be a positive number" });
+            }
+            updateFields.total = total;
         }
+        if (details) updateFields.details = details;
 
-        const updatedPurchase = await Purchase.findByIdAndUpdate(
-            id,
-            { product: productId, provider: providerId, purchaseDate, total, details },
-            { new: true, runValidators: true }
-        )
+        const updatedPurchase = await Purchase.findByIdAndUpdate(id, updateFields, {
+            new: true,
+            runValidators: true
+        })
             .select("product provider purchaseDate total details")
             .populate("product", "name")
             .populate("provider", "name");

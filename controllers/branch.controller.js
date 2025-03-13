@@ -12,50 +12,50 @@ async function generateBranchId() {
     return `Br${nextNumber}`;
 }
 
-// Validación de campos
+// Field validation
 function validateBranchData(data, isUpdate = false) {
     const errors = {};
 
-    // Validar nombre
+    // Validate name
     if (!isUpdate || data.name) {
         if (!data.name || data.name.trim() === "") {
-            errors.name = "El nombre de la sucursal es obligatorio";
+            errors.name = "Branch name is required";
         } else if (data.name.length < 2 || data.name.length > 100) {
-            errors.name = "El nombre debe tener entre 2 y 100 caracteres";
+            errors.name = "Name must be between 2 and 100 characters";
         }
     }
 
-    // Validar ubicación
+    // Validate location
     if (!isUpdate || data.location) {
         if (!data.location || data.location.trim() === "") {
-            errors.location = "La ubicación es obligatoria";
+            errors.location = "Location is required";
         } else if (data.location.length < 2 || data.location.length > 100) {
-            errors.location = "La ubicación debe tener entre 2 y 100 caracteres";
+            errors.location = "Location must be between 2 and 100 characters";
         }
     }
 
-    // Validar status
+    // Validate status
     if (!isUpdate || data.status) {
         const validStatuses = ["active", "inactive", "pending"];
         if (!data.status || !validStatuses.includes(data.status)) {
-            errors.status = "Estado inválido. Debe ser: active, inactive o pending";
+            errors.status = "Invalid status. Must be: active, inactive or pending";
         }
     }
 
-    // Validar teléfono (validación básica de formato)
+    // Validate phone (basic format validation)
     if (!isUpdate || data.phone) {
         const phoneRegex = /^[+]?[\d\s()-]{10,15}$/;
         if (!data.phone || !phoneRegex.test(data.phone)) {
-            errors.phone = "Número de teléfono inválido";
+            errors.phone = "Invalid phone number";
         }
     }
 
-    // Validar dirección
+    // Validate address
     if (!isUpdate || data.address) {
         if (!data.address || data.address.trim() === "") {
-            errors.address = "La dirección es obligatoria";
+            errors.address = "Address is required";
         } else if (data.address.length < 5 || data.address.length > 200) {
-            errors.address = "La dirección debe tener entre 5 y 200 caracteres";
+            errors.address = "Address must be between 5 and 200 characters";
         }
     }
 
@@ -97,7 +97,7 @@ export const postBranches = async (req, res) => {
     try {
         const { name, location, status, phone, address } = req.body;
         
-        // Validar datos
+        // Validate data
         const validation = validateBranchData(req.body);
         if (!validation.isValid) {
             return res.status(400).json({ 
@@ -106,7 +106,7 @@ export const postBranches = async (req, res) => {
             });
         }
         
-        // Verificar si ya existe una sucursal con el mismo nombre
+        // Check if a branch with the same name already exists
         const existingBranch = await Branch.findOne({ name });
         if (existingBranch) {
             return res.status(409).json({ 
@@ -142,13 +142,13 @@ export const postBranches = async (req, res) => {
 // Update a branch
 export const updateBranches = async (req, res) => {
     try {
-        // Verificar si la sucursal existe
+        // Check if the branch exists
         const existingBranch = await Branch.findById(req.params.id);
         if (!existingBranch) {
             return res.status(404).json({ message: "Branch not found" });
         }
 
-        // Validar datos para actualización
+        // Validate data for update
         const validation = validateBranchData(req.body, true);
         if (!validation.isValid) {
             return res.status(400).json({ 
@@ -157,7 +157,7 @@ export const updateBranches = async (req, res) => {
             });
         }
 
-        // Verificar si el nombre de sucursal ya existe (excluyendo la sucursal actual)
+        // Check if branch name already exists (excluding the current branch)
         if (req.body.name) {
             const duplicateBranch = await Branch.findOne({ 
                 name: req.body.name, 
@@ -165,12 +165,12 @@ export const updateBranches = async (req, res) => {
             });
             if (duplicateBranch) {
                 return res.status(409).json({ 
-                    message: "Datos correctos " 
+                    message: "Correct data" 
                 });
             }
         }
 
-        // Actualizar sucursal
+        // Update branch
         const updatedBranch = await Branch.findByIdAndUpdate(
             req.params.id,
             req.body,

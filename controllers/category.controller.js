@@ -65,8 +65,18 @@ export const postCategory = async (req, res) => {
             return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
         }
 
+        const existingCategory = await Category.findOne({ name: name.trim().toLowerCase() });
+        if (existingCategory) {
+            return res.status(409).json({ message: "Category name already exists" });
+        }
+
         const id = await generateCategoryId();
-        const newCategory = new Category({ id, name, description, status });
+        const newCategory = new Category({
+            id,
+            name: name.trim(),
+            description,
+            status
+        });
 
         await newCategory.save();
         res.status(201).json({ message: "Category created successfully", id: newCategory.id, ...newCategory._doc });
@@ -75,6 +85,7 @@ export const postCategory = async (req, res) => {
         res.status(500).json({ message: "Error creating category" });
     }
 };
+
 
 // Update a category
 export const putCategory = async (req, res) => {
@@ -97,9 +108,24 @@ export const putCategory = async (req, res) => {
             return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
         }
 
+        if (name) {
+            const existingCategory = await Category.findOne({
+                name: name.trim().toLowerCase(),
+                _id: { $ne: req.params.id }
+            });
+
+            if (existingCategory) {
+                return res.status(409).json({ message: "Another category with the same name already exists" });
+            }
+        }
+
         const updatedCategory = await Category.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            {
+                ...(name && { name: name.trim() }),
+                ...(description && { description }),
+                ...(status && { status })
+            },
             { new: true, runValidators: true }
         );
 

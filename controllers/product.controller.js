@@ -1,6 +1,7 @@
 import Product from "../models/product.js";
 import Category from "../models/category.js";
 import mongoose from "mongoose";
+import { checkPermission } from "../utils/permissions.js";
 
 async function generateProductId() {
     const lastProduct = await Product.findOne().sort({ _id: -1 });
@@ -17,13 +18,13 @@ async function generateProductId() {
 // Get all products
 export const getProducts = async (req, res) => {
     try {
-        if (!req.user.permissions.includes("view_products")) {
+        if (!checkPermission(req.user.role, "view_products")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 
         const products = await Product.find()
-            .select("id name price stock minimumStock status")
-            .populate("category", "name");
+            .select("id name price stock minimumStock status category") // ← incluimos 'category'
+            .populate("category", "name"); // ← trae solo el nombre de la categoría
 
         res.status(200).json(products);
     } catch (error) {
@@ -35,7 +36,7 @@ export const getProducts = async (req, res) => {
 // Get product by ID
 export const getProductById = async (req, res) => {
     try {
-        if (!req.user.permissions.includes("view_products")) {
+        if (!checkPermission(req.user.role, "view_products")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 
@@ -46,7 +47,7 @@ export const getProductById = async (req, res) => {
         }
 
         const product = await Product.findById(id)
-            .select("id name price stock minimumStock status")
+            .select("id name price stock minimumStock status category") // ← también incluimos 'category'
             .populate("category", "name");
 
         if (!product) {
@@ -60,55 +61,46 @@ export const getProductById = async (req, res) => {
     }
 };
 
-// Create a new product
-export const postProduct = async (req, res) => {
+// POST: Create new purchase
+export const postPurchase = async (req, res) => {
     try {
-        if (!req.user.permissions.includes("create_products")) {
-            return res.status(403).json({ message: "Unauthorized access" });
-        }
+        const { product, provider, total, details } = req.body;
 
-        const { name, category, price, stock, minimumStock, status } = req.body;
-
-        if (!name || !category || price === undefined || stock === undefined || minimumStock === undefined || !status) {
+        if (!product || !provider || total === undefined || !details) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        if (typeof price !== "number" || price <= 0) {
-            return res.status(400).json({ message: "Price must be a positive number" });
+        if (!mongoose.Types.ObjectId.isValid(product)) {
+            return res.status(400).json({ message: "Invalid product ID" });
         }
 
-        if (!Number.isInteger(stock) || stock < 0) {
-            return res.status(400).json({ message: "Stock must be a non-negative integer" });
+        if (!mongoose.Types.ObjectId.isValid(provider)) {
+            return res.status(400).json({ message: "Invalid provider ID" });
         }
 
-        if (!Number.isInteger(minimumStock) || minimumStock < 0) {
-            return res.status(400).json({ message: "Minimum stock must be a non-negative integer" });
+        const existingProduct = await Product.findById(product);
+        if (!existingProduct) {
+            return res.status(404).json({ message: "Product not found" });
         }
 
-        if (!["active", "inactive"].includes(status)) {
-            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
+        const existingProvider = await Provider.findById(provider);
+        if (!existingProvider) {
+            return res.status(404).json({ message: "Provider not found" });
         }
 
-        const existingCategory = await Category.findOne({ name: category });
-        if (!existingCategory) {
-            return res.status(404).json({ message: "Category not found" });
-        }
-
-        const id = await generateProductId();
-        const newProduct = new Product({
+        const id = await generatePurchaseId();
+        const newPurchase = new Purchase({
             id,
-            name,
-            category: existingCategory._id,
-            price,
-            stock,
-            minimumStock,
-            status
+            product,
+            provider,
+            total,
+            details
         });
 
-        await newProduct.save();
-        res.status(201).json({ message: "Product created successfully", product: newProduct });
+        await newPurchase.save();
+        res.status(201).json({ message: "Purchase created successfully", purchase: newPurchase });
     } catch (error) {
-        console.error("Error creating product:", error);
+        console.error("Error creating purchase:", error);
         res.status(500).json({ message: "Server error" });
     }
 };
@@ -116,7 +108,7 @@ export const postProduct = async (req, res) => {
 // Update a product
 export const updateProduct = async (req, res) => {
     try {
-        if (!req.user.permissions.includes("edit_products")) {
+        if (!checkPermission(req.user.role, "update_products")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 
@@ -141,7 +133,7 @@ export const updateProduct = async (req, res) => {
             { name, category: categoryId, price, stock, minimumStock, status },
             { new: true, runValidators: true }
         )
-            .select("id name price stock minimumStock")
+            .select("id name price stock minimumStock status")
             .populate("category", "name");
 
         if (!updatedProduct) {
@@ -158,7 +150,7 @@ export const updateProduct = async (req, res) => {
 // Delete a product
 export const deleteProduct = async (req, res) => {
     try {
-        if (!req.user.permissions.includes("delete_products")) {
+        if (!checkPermission(req.user.role, "delete_products")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 

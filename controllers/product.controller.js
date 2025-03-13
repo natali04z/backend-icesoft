@@ -61,46 +61,58 @@ export const getProductById = async (req, res) => {
     }
 };
 
-// POST: Create new purchase
-export const postPurchase = async (req, res) => {
+export const postProduct = async (req, res) => {
     try {
-        const { product, provider, total, details } = req.body;
+        if (!checkPermission(req.user.role, "create_products")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
 
-        if (!product || !provider || total === undefined || !details) {
+        const { name, category, price, stock, minimumStock, status } = req.body;
+
+        if (!name || !category || price === undefined || stock === undefined || minimumStock === undefined || !status) {
             return res.status(400).json({ message: "All fields are required" });
         }
 
-        if (!mongoose.Types.ObjectId.isValid(product)) {
-            return res.status(400).json({ message: "Invalid product ID" });
+        if (!mongoose.Types.ObjectId.isValid(category)) {
+            return res.status(400).json({ message: "Invalid category ID" });
         }
 
-        if (!mongoose.Types.ObjectId.isValid(provider)) {
-            return res.status(400).json({ message: "Invalid provider ID" });
+        const existingCategory = await Category.findById(category);
+        if (!existingCategory) {
+            return res.status(404).json({ message: "Category not found" });
         }
 
-        const existingProduct = await Product.findById(product);
-        if (!existingProduct) {
-            return res.status(404).json({ message: "Product not found" });
+        if (typeof price !== "number" || price <= 0) {
+            return res.status(400).json({ message: "Price must be a positive number" });
         }
 
-        const existingProvider = await Provider.findById(provider);
-        if (!existingProvider) {
-            return res.status(404).json({ message: "Provider not found" });
+        if (!Number.isInteger(stock) || stock < 0) {
+            return res.status(400).json({ message: "Stock must be a non-negative integer" });
         }
 
-        const id = await generatePurchaseId();
-        const newPurchase = new Purchase({
+        if (!Number.isInteger(minimumStock) || minimumStock < 0) {
+            return res.status(400).json({ message: "Minimum stock must be a non-negative integer" });
+        }
+
+        if (!["active", "inactive"].includes(status)) {
+            return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
+        }
+
+        const id = await generateProductId();
+        const newProduct = new Product({
             id,
-            product,
-            provider,
-            total,
-            details
+            name,
+            category, // ahora ya es el ID
+            price,
+            stock,
+            minimumStock,
+            status
         });
 
-        await newPurchase.save();
-        res.status(201).json({ message: "Purchase created successfully", purchase: newPurchase });
+        await newProduct.save();
+        res.status(201).json({ message: "Product created successfully", product: newProduct });
     } catch (error) {
-        console.error("Error creating purchase:", error);
+        console.error("Error creating product:", error);
         res.status(500).json({ message: "Server error" });
     }
 };

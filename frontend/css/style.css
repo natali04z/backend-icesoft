@@ -1,0 +1,282 @@
+/* ====================== VARIABLES GLOBALES ====================== */
+:root {
+    --green: hsl(162, 45%, 56%);
+    --plomo: hsl(162, 2%, 56%);
+    --blue: hsl(220, 85%, 57%);
+    --violet: hsl(272, 92%, 32%);
+    --text-white: hsl(0, 0%, 100%);
+    --text-light-gray: hsl(0, 0%, 90%);
+    --body-bg-color: hsl(210, 30%, 15%);
+    --glass-bg-color: hsla(0, 0%, 100%, 0.05);
+    --border-color: hsla(0, 0%, 100%, 0.2);
+    --blur: blur(20px);
+    --button-hover-color: hsla(0, 0%, 0%, 0.3);
+}
+
+/* ====================== RESET Y BASE ====================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body.login-page {
+    background: linear-gradient(135deg, #1b2b40, #2e3b52);
+    font-family: 'Poppins', sans-serif;
+    font-size: 16px;
+    color: var(--text-white);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow-x: hidden;
+}
+
+/* ====================== FORMULARIOS ====================== */
+.form-main {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 50px 20px;
+}
+
+.form-content {
+    width: 100%;
+    max-width: 400px;
+    background: var(--glass-bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 40px;
+    backdrop-filter: var(--blur);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.form-content h3 {
+    text-align: center;
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: var(--text-white);
+}
+
+.input-box {
+    margin-bottom: 20px;
+}
+
+.input-control {
+    width: 100%;
+    height: 45px;
+    padding: 10px 15px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-white);
+    font-size: 16px;
+    transition: 0.3s ease;
+}
+
+.input-control::placeholder {
+    color: var(--text-light-gray);
+}
+
+.input-control:focus {
+    outline: none;
+    border-bottom: 1px solid var(--blue);
+}
+
+.input-link {
+    margin-top: 10px;
+    text-align: right;
+}
+
+.input-link a {
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--blue);
+    transition: 0.3s ease;
+}
+
+.input-link a:hover {
+    text-decoration: underline;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    background-color: var(--blue);
+    color: white;
+    font-weight: 500;
+    font-size: 16px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+}
+
+.btn:hover {
+    background-color: #3c4f62;
+}
+
+/* ====================== MENÚ LATERAL ====================== */
+.navLateral {
+    width: 250px;
+    height: 100vh;
+    background-color: #1b2b40;
+    border-right: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 1000;
+    backdrop-filter: var(--blur);
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.navLateral-body {
+    padding: 20px;
+    color: var(--text-white);
+}
+
+.navLateral-body-logo {
+    font-size: 50px;
+    margin-bottom: 50px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    color: var(--text-white);
+    font-weight: bold;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* ==== ESTILOS DEL LOGO (IMAGEN Y TEXTO) ==== */
+.navLateral-body-logo .logo-img {
+    width: 55px;
+    height: auto;
+}
+
+.navLateral-body-logo .logo-text {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.navLateral-body i {
+    cursor: pointer;
+    font-size: 24px;
+    color: var(--text-white);
+}
+
+.menu-principal {
+    list-style: none;
+    padding: 0;
+}
+
+.menu-principal li {
+    margin-bottom: 15px;
+}
+
+.menu-principal a {
+    text-decoration: none;
+    color: var(--text-light-gray);
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    padding: 10px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease;
+}
+
+.menu-principal a:hover {
+    background-color: var(--button-hover-color);
+    color: var(--text-white);
+}
+
+.menu-principal i {
+    margin-right: 10px;
+}
+
+.logout-button {
+    position: absolute;
+    bottom: 20px;
+    width: 100%;
+    padding-left: 20px;
+  }
+
+  .logout-button a {
+    display: flex;
+    align-items: center;
+    color: #fff;
+    text-decoration: none;
+    padding: 10px 0;
+    font-size: 16px;
+  }
+
+  .logout-button {
+    margin-top: 40px;
+    padding-left: 180px;
+  }
+
+/* ===== Submenús ===== */
+.sub-menu-options {
+    display: none;
+    padding-left: 20px;
+    animation: fadeIn 0.3s ease;
+    background-color: #1b2b40;
+}
+
+.sub-menu-options.show-submenu {
+    display: block;
+}
+
+.arrow {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.menu-principal a.active .arrow {
+    transform: rotate(90deg);
+}
+
+.divider-menu-h {
+    border-bottom: 1px solid var(--border-color);
+    margin: 10px 0;
+}
+
+/* ====================== HEADER PRINCIPAL ====================== */
+.dashboard-header {
+    position: fixed;
+    top: 0;
+    left: 250px;
+    right: 0;
+    height: 70px;
+    padding: 0 20px;
+    background-color: #1b2b40;
+    border-bottom: 1px solid var(--border-color);
+    backdrop-filter: var(--blur);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-header h2 {
+    color: var(--text-white);
+    font-size: 22px;
+}
+
+.dashboard-header button {
+    background-color: var(--blue);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dashboard-header button:hover {
+    background-color: #3c4f62;
+}

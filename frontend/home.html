@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IceSoft</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.materialdesignicons.com/6.5.95/css/materialdesignicons.min.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+</head>
+<body class="dashboard-page">
+  <section class="navLateral">
+    <div class="navLateral-bg btn-menu"></div>
+    <div class="navLateral-body">
+      <div class="navLateral-body-logo">
+        <img src="./assets/icesoft.png" class="logo-img" alt="Logo">
+        <span class="logo-text">ICESOFT</span>
+      </div>      
+      <nav>
+        <ul class="menu-principal">
+          <li><a href="home.html"><i class="material-icons">dashboard</i> HOME</a></li>
+          <li class="divider-menu-h"></li>
+          <li>
+            <a href="#" class="btn-subMenu"><i class="material-icons">work</i> COMPRAS <span class="material-icons arrow">chevron_left</span></a>
+            <ul class="sub-menu-options">
+              <li><a href="categorias.html"><i class="material-icons">label</i> CATEGORÍAS</a></li>
+              <li><a href="productos.html"><i class="material-icons">local_offer</i> PRODUCTOS</a></li>
+              <li><a href="proveedores.html"><i class="material-icons">local_shipping</i> PROVEEDORES</a></li>
+              <li><a href="compras.html"><i class="material-icons">shopping_cart</i> COMPRAS</a></li>
+            </ul>
+          </li>
+          <li class="divider-menu-h"></li>
+          <li>
+            <a href="#" class="btn-subMenu"><i class="material-icons">attach_money</i> VENTAS <span class="material-icons arrow">chevron_left</span></a>
+            <ul class="sub-menu-options">
+              <li><a href="ventas.html"><i class="material-icons">receipt</i> FACTURACIÓN</a></li>
+              <li><a href="clientes.html"><i class="material-icons">people</i> CLIENTES</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- BOTÓN DE CERRAR SESIÓN ABAJO -->
+      <div class="logout-button">
+        <a href="#" onclick="logout()"><i class="material-icons">logout</i></a>
+      </div>
+    </div>
+  </section>
+
+  <header class="dashboard-header">
+    <h2>Panel Administrativo</h2>
+  </header>
+
+  <script src="js/menu.js"></script>
+</body>
+</html>

@@ -5,8 +5,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// **REGISTER USER**
-
+// REGISTER USER
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
@@ -24,15 +23,13 @@ export const registerUser = async (req, res) => {
         const newUser = new User({ name, email, password: hashedPassword, role });
 
         await newUser.save();
-        
-        // Generar el token JWT
+
         const token = jwt.sign(
             { userId: newUser._id, email: newUser.email, role: newUser.role },
-            process.env.JWT_SECRET, // Asegúrate de tener esta variable en tu .env
-            { expiresIn: '24h' } // Puedes ajustar el tiempo de expiración
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
         );
 
-        // Devolver el token junto con la información del usuario
         res.status(201).json({
             message: "User registered successfully",
             token,
@@ -47,8 +44,9 @@ export const registerUser = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }
-}
-// **LOGIN USER**
+};
+
+// LOGIN USER
 export const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -80,7 +78,7 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// **GET AUTHENTICATED USER**
+// GET AUTHENTICATED USER
 export const getAuthenticatedUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).select("-password");
@@ -90,5 +88,29 @@ export const getAuthenticatedUser = async (req, res) => {
         res.json(user);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
+    }
+};
+
+// RESET/CHANGE PASSWORD (without email link)
+export const resetPassword = async (req, res) => {
+    try {
+        const { email, newPassword } = req.body;
+
+        if (!email || !newPassword) {
+            return res.status(400).json({ message: "Email and new password are required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        await user.save();
+
+        res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error resetting password", error: error.message });
     }
 };

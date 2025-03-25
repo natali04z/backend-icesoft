@@ -552,11 +552,12 @@ body.menu-collapsed .main-content {
 }
 
 /* ====================== FORMULARIOS ====================== */
-.input-box {
+/* Campos de formulario */
+.form-field {
     margin-bottom: 15px;
 }
 
-.input-control {
+.field-element {
     width: 100%;
     height: 40px;
     padding: 8px 15px;
@@ -567,17 +568,17 @@ body.menu-collapsed .main-content {
     color: var(--text-dark);
 }
 
-
-.input-control:focus {
+.field-element:focus {
     outline: none;
     border-color: var(--blue);
 }
 
-.input-control::placeholder {
+.field-element::placeholder {
     color: #aaa;
 }
 
-.btn {
+/* Botones y contenedores */
+.action-button {
     width: auto;
     padding: 8px 16px;
     border: none;
@@ -594,11 +595,28 @@ body.menu-collapsed .main-content {
     margin: 0 auto;
 }
 
-.btn:hover {
+.action-button:hover {
     background-color: #5183cf;
 }
 
-.button-group {
+.action-button.data-grid {
+    width: auto;
+    padding: 8px 16px;
+    border: none;
+    background-color: var(--blue);
+    color: white;
+    font-weight: 500;
+    font-size: 14px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto;
+}
+
+.controls-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -606,7 +624,9 @@ body.menu-collapsed .main-content {
     margin-top: 15px;
 }
 
-.button-group .btn {
+/* Botones en grupos */
+.button-group .action-button,
+.button-group .data-grid {
     min-width: 110px;
     padding: 9px 15px;
     font-size: 15px;
@@ -615,7 +635,8 @@ body.menu-collapsed .main-content {
     transition: all 0.3s ease;
 }
 
-.button-group .btn:hover {
+.button-group .action-button:hover,
+.button-group .data-grid:hover {
     transform: scale(1.05);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }

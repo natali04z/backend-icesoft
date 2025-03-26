@@ -1,8 +1,8 @@
-import Sale from "../models/Sales.js";
+import Sale from "../models/sales.js";
 import Product from "../models/product.js";
 import mongoose from "mongoose";
 
-// Obtener todas las ventas
+//  Obtener todas las ventas
 export const getSales = async (req, res) => {
   try {
     const sales = await Sale.find().populate("product", "name price");
@@ -13,12 +13,13 @@ export const getSales = async (req, res) => {
   }
 };
 
-// Crear una venta
+//  Crear una nueva venta
 export const createSale = async (req, res) => {
   try {
-    const { product, quantity, totalAmount, price, customer } = req.body;
+    const { customer, product, quantity, price, totalAmount } = req.body;
 
-    if (!product || !quantity || !totalAmount || !price || !customer) {
+    //  Validar que todos los campos requeridos estén presentes
+    if (!customer || !product || !quantity || !price || !totalAmount) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
@@ -39,10 +40,12 @@ export const createSale = async (req, res) => {
       return res.status(400).json({ error: "Not enough stock available" });
     }
 
+    //  Reducir stock del producto
     existingProduct.stock -= quantity;
     await existingProduct.save();
 
-    const newSale = new Sale({ product: existingProduct._id, quantity, totalAmount, price, customer });
+    //  Guardar la venta en la base de datos
+    const newSale = new Sale({ customer, product, quantity, price, totalAmount });
     await newSale.save();
 
     res.status(201).json(newSale);
@@ -52,7 +55,7 @@ export const createSale = async (req, res) => {
   }
 };
 
-// Actualizar una venta
+//  Actualizar una venta
 export const updateSale = async (req, res) => {
   try {
     const { product, quantity, totalAmount } = req.body;
@@ -64,6 +67,7 @@ export const updateSale = async (req, res) => {
 
     let stockDifference = 0;
 
+    // Manejo de cambios en cantidad
     if (quantity && quantity !== sale.quantity) {
       const existingProduct = await Product.findById(sale.product);
 
@@ -81,6 +85,7 @@ export const updateSale = async (req, res) => {
       await existingProduct.save();
     }
 
+    //  Manejo de cambios en producto
     if (product && product !== sale.product.toString()) {
       if (!mongoose.Types.ObjectId.isValid(product)) {
         return res.status(400).json({ error: "Invalid product ID" });
@@ -105,6 +110,7 @@ export const updateSale = async (req, res) => {
       await newProduct.save();
     }
 
+    // Actualizar la venta
     const updatedSale = await Sale.findByIdAndUpdate(
       req.params.id,
       { product, quantity, totalAmount },
@@ -126,12 +132,14 @@ export const deleteSale = async (req, res) => {
       return res.status(404).json({ error: "Sale not found" });
     }
 
+    //  Devolver el stock al producto
     const product = await Product.findById(sale.product);
     if (product) {
       product.stock += sale.quantity;
       await product.save();
     }
 
+    //  Eliminar la venta de la base de datos
     await Sale.findByIdAndDelete(req.params.id);
     res.json({ message: "Sale deleted and stock updated" });
   } catch (error) {

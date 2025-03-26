@@ -1,13 +1,16 @@
 import mongoose from "mongoose";
 
-const SaleSchema = new mongoose.Schema({
-  customer: { type: String, required: true },
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
-  quantity: { type: Number, required: true },
+// Definir esquema de ventas
+const saleSchema = new mongoose.Schema({
+  customer: { type: String, required: true }, // Cambié "cliente" por "customer" para que coincida con el controlador
+  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true }, // Ahora referencia a Product
+  quantity: { type: Number, required: true }, // Agregado porque el controlador lo usa
   price: { type: Number, required: true },
+  totalAmount: { type: Number, required: true }, // Agregado porque el controlador lo usa
   date: { type: Date, default: Date.now }
 });
 
-//  Exportación correcta para ES Modules
-const Sale = mongoose.model("Sales", SaleSchema);
+// Evitar duplicación del modelo
+const Sale = mongoose.models.Sale || mongoose.model("Sale", saleSchema);
+
 export default Sale;

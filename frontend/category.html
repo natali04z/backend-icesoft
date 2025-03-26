@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Usuarios | ICESOFT</title>
+  <title>Categorías | ICESOFT</title>
   <link rel="icon" href="assets/icesoft.png" type="image/png">
   <link rel="stylesheet" href="css/style.css">
   <script src="js/alerts.js"></script>
@@ -32,10 +32,10 @@
           <li>
             <a href="#" class="btn-subMenu"><i class="material-icons">work</i><span>COMPRAS</span><span class="material-icons arrow">chevron_left</span></a>
             <ul class="sub-menu-options">
-              <li><a href="category.html"><i class="material-icons">label</i><span>CATEGORÍAS</span></a></li>
-              <li><a href="products.html"><i class="material-icons">local_offer</i><span>PRODUCTOS</span></a></li>
-              <li><a href="providers.html"><i class="material-icons">local_shipping</i><span>PROVEEDORES</span></a></li>
-              <li><a href="shopping.html"><i class="material-icons">shopping_cart</i><span>COMPRAS</span></a></li>
+                <li><a href="category.html"><i class="material-icons">label</i><span>CATEGORÍAS</span></a></li>
+                <li><a href="products.html"><i class="material-icons">local_offer</i><span>PRODUCTOS</span></a></li>
+                <li><a href="providers.html"><i class="material-icons">local_shipping</i><span>PROVEEDORES</span></a></li>
+                <li><a href="shopping.html"><i class="material-icons">shopping_cart</i><span>COMPRAS</span></a></li>
             </ul>
           </li>
           <li class="divider-menu-h"></li>
@@ -70,20 +70,20 @@
 
   <main class="main-content">
     <div class="container">
-      <h2 class="title">Gestión de Usuarios</h2>
+      <h2 class="title">Gestión de Categorías</h2>
 
       <!-- Search container -->
       <div class="search-container">
         <div class="search-box">
-          <input type="text" id="searchInput" placeholder="Buscar usuario...">
-          <button onclick="searchUser()"><i class="material-icons">search</i></button>
+          <input type="text" id="searchInput" placeholder="Buscar categoría..." oninput="searchCategory()">
+          <button onclick="searchCategory()"><i class="material-icons">search</i></button>
         </div>
       </div>
 
       <!-- Tabla de Usuarios -->
       <section class="table-card">
         <div class="card-header card-header-flex">
-          <h3>Listado de Usuarios</h3>
+          <h3>Listado de Categorías</h3>
           <button type="button" class="add-button" id="mobileAddButton">
             <i class="material-icons">person_add</i> Añadir
           </button>
@@ -93,17 +93,16 @@
             <table class="users-table">
               <thead>
                 <tr>
+                  <th>ID</th>
                   <th>Nombre</th>
-                  <th>Apellido</th>
-                  <th>Teléfono</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
+                  <th>Descripción</th>
+                  <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
-              <tbody id="userTableBody">
-                <!-- Usuarios cargados dinámicamente -->
-              </tbody>
+              <tbody id="categoryTableBody">
+                <!-- Aquí se insertarán las categorías -->
+            </tbody>
             </table>
           </div>
           <div class="pagination">
@@ -117,7 +116,7 @@
       <!-- Formulario de Registro -->
       <section class="form-card" id="registerFormSection" style="display: none;">
         <div class="card-header">
-          <h3 id="formTitle">Registrar Usuario</h3>
+          <h3 id="formTitle">Registrar Categoría</h3>
         </div>
         <div class="card-body">
           <form id="userForm">
@@ -125,70 +124,52 @@
               <input type="text" class="field-element" id="name" placeholder="Nombre">
             </div>
             <div class="form-field">
-              <input type="text" class="field-element" id="lastname" placeholder="Apellido">
+              <input type="text" class="field-element" id="description" placeholder="Descripción">
             </div>
             <div class="form-field">
-              <input type="text" class="field-element" id="contact_number" placeholder="Teléfono">
-            </div>
-            <div class="form-field">
-              <input type="email" class="field-element" id="email" placeholder="Correo electrónico">
-            </div>
-            <div class="form-field">
-              <input type="password" class="field-element" id="password" placeholder="Contraseña">
-            </div>
-            <div class="form-field">
-              <select class="field-element" id="role">
-                <option value="" disabled selected hidden>Seleccionar rol</option>
-                <option value="admin">Administrador</option>
-                <option value="assistant">Asistente</option>
-                <option value="employee">Empleado</option>
-              </select>
+              <label>Estado:</label>
+              <label class="switch">
+                <input type="checkbox" id="status">
+                <span class="slider"></span>
+              </label>
             </div>
             <div class="controls-container">
               <button type="button" class="action-button" id="registerButton">Registrar</button>
             </div>
           </form>
         </div>
-      </section>
-
-      <!-- Formulario de Edición -->
-      <section class="form-card" id="editFormSection" style="display: none;">
-        <div class="card-header">
-          <h3id="editFormTitle">Editar Usuario</h3>
-        </div>
-        <div class="card-body">
-          <form id="editForm">
-            <input type="hidden" id="editId">
-            <div class="form-field">
-              <input type="text" class="field-element" id="editName" placeholder="Nombre">
-            </div>
-            <div class="form-field">
-              <input type="text" class="field-element" id="editLastname" placeholder="Apellido">
-            </div>
-            <div class="form-field">
-              <input type="text" class="field-element" id="editContact" placeholder="Teléfono">
-            </div>
-            <div class="form-field">
-              <input type="email" class="field-element" id="editEmail" placeholder="Correo electrónico">
-            </div>
-            <div class="form-field">
-              <select class="field-element" id="editRole">
-                <option value="" disabled selected hidden>Seleccionar rol</option>
-                <option value="admin">Administrador</option>
-                <option value="assistant">Asistente</option>
-                <option value="employee">Empleado</option>
-              </select>
-            </div>
-            <div class="controls-container">
-              <button type="submit" class="action-button">Actualizar</button>
-            </div>
-          </form>
-        </div>
-      </section>
+        
+        <!-- Formulario de Edición -->
+        <section class="form-card" id="editFormSection" style="display: none;">
+          <div class="card-header">
+            <h3 id="editFormTitle">Editar Categoría</h3>
+          </div>
+          <div class="card-body">
+            <form id="editForm">
+              <input type="hidden" id="editId">
+              <div class="form-field">
+                <input type="text" class="field-element" id="editName" placeholder="Nombre">
+              </div>
+              <div class="form-field">
+                <input type="text" class="field-element" id="editDescription" placeholder="Descripción">
+              </div>
+              <div class="form-field">
+                <label>Estado:</label>
+                <label class="switch">
+                  <input type="checkbox" id="status">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="controls-container">
+                <button type="button" class="action-button" id="editButton">Actualizar</button>
+              </div>
+            </form>
+          </div>
+        </section>        
     </div>
   </main>
 
   <script src="js/menu.js"></script>
-  <script src="js/user.js"></script>
+  <script src="js/category.js"></script>
 </body>
 </html>

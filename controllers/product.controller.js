@@ -120,7 +120,7 @@ export const postProduct = async (req, res) => {
 // Update a product
 export const updateProduct = async (req, res) => {
     try {
-        if (!checkPermission(req.user.role, "update_products")) {
+        if (!checkPermission(req.user.role, "edit_products")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 
@@ -133,10 +133,10 @@ export const updateProduct = async (req, res) => {
 
         let categoryId = null;
         if (category) {
-            const existingCategory = await Category.findOne({ name: category });
-            if (!existingCategory) {
-                return res.status(404).json({ message: "Category not found" });
-            }
+            const existingCategory = await Category.findById(category);
+        if (!existingCategory) {
+            return res.status(404).json({ message: "Category not found" });
+        }
             categoryId = existingCategory._id;
         }
 

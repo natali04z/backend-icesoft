@@ -177,22 +177,23 @@ const registerUser = async () => {
       })
     });
 
-    const data = await res.json();
-    if (res.status === 201 || res.ok) {
-      showSuccess("Usuario registrado correctamente.");
-      hideRegisterForm();  // Cerrar el formulario después de un registro exitoso
-      listUsers();
-    } else {
-      showError(data.message || "Error al registrar usuario.");
+      const data = await res.json();
+      if (res.status === 201 || res.ok) {
+        showSuccess("Usuario registrado correctamente.");
+        hideRegisterForm();  // Cerrar el formulario después de un registro exitoso
+        listUsers();
+      } else {
+        showError(data.message || "Error al registrar usuario.");
+      }
+    } catch (err) {
+      console.error("Error al registrar usuario:", err);
+      showError("Error al registrar usuario");
     }
-  } catch (err) {
-    console.error("Error al registrar usuario:", err);
-    showError("Error al registrar usuario");
-  }
-};
+  };
 
 // Editar usuario
-// Editar usuario: Cargar los datos en el formulario
+// Llenar el formulario de edición con los datos del usuario
+// Editar usuario
 const fillEditForm = async (id) => {
   const token = localStorage.getItem("token");
 
@@ -223,38 +224,36 @@ const fillEditForm = async (id) => {
 
     if (!res.ok) {
       const data = await res.json();
-      showError(data.message || "Error al cargar el usuario");
+      showError(data.message || "Error al cargar los datos del usuario.");
       return;
     }
 
     const user = await res.json();
+    console.log("Usuario cargado:", user);
 
-    // Rellenar el formulario de edición con los datos del usuario
     document.getElementById("editId").value = user._id;
-    document.getElementById("editName").value = user.name;
-    document.getElementById("editLastname").value = user.lastname;
-    document.getElementById("editContact").value = user.contact_number;
-    document.getElementById("editEmail").value = user.email;
+    document.getElementById("editName").value = user.name || "";
+    document.getElementById("editLastname").value = user.lastname || "";
+    document.getElementById("editContact").value = user.contact_number || "";
+    document.getElementById("editEmail").value = user.email || "";
     document.getElementById("editRole").value = user.role?._id || "";
 
     hideForms();
     document.getElementById("editFormSection").style.display = "block";
     window.scrollTo(0, document.body.scrollHeight);
 
-    // Asociar el evento de enviar el formulario
     const editForm = document.getElementById("editForm");
     editForm.onsubmit = async (event) => {
       event.preventDefault();
       await updateUser(id);
     };
-
   } catch (err) {
     console.error("Error al cargar el usuario:", err);
-    showError("Error al cargar el usuario");
+    showError(`Ocurrió un error: ${err.message || err}`);
   }
 };
 
-// Actualizar usuario: Enviar los datos modificados al backend
+// Actualizar usuario
 const updateUser = async (id) => {
   const token = localStorage.getItem("token");
   if (!token) {
@@ -262,7 +261,6 @@ const updateUser = async (id) => {
     return;
   }
 
-  // Obtener los valores del formulario
   const name = document.getElementById("editName").value.trim();
   const lastname = document.getElementById("editLastname").value.trim();
   const contact_number = document.getElementById("editContact").value.trim();
@@ -274,7 +272,6 @@ const updateUser = async (id) => {
     return;
   }
 
-  // Mostrar confirmación antes de actualizar
   const confirmed = await showConfirm({
     title: "¿Confirmas actualizar este usuario?", 
     text: "Se guardarán los cambios realizados.", 
@@ -291,25 +288,24 @@ const updateUser = async (id) => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`
       },
-      body: JSON.stringify({
-        name, lastname, email, contact_number, role
-      })
+      body: JSON.stringify({ name, lastname, email, contact_number, role })
     });
 
     const data = await res.json();
+    console.log("Respuesta del servidor:", data);
+
     if (res.ok) {
       showSuccess("Usuario actualizado correctamente.");
       hideForms();
       listUsers();
     } else {
-      showError(data.message || "Error al actualizar usuario");
+      showError(data.message || "Error al actualizar el usuario.");
     }
   } catch (err) {
     console.error("Error al actualizar usuario:", err);
-    showError("Error al actualizar usuario");
+    showError(`Ocurrió un error: ${err.message || err}`);
   }
 };
-
 
 // Eliminar usuario
 const deleteUser = async (id) => {
@@ -347,20 +343,21 @@ const deleteUser = async (id) => {
   }
 };
 
-const buscarUsuario = () => {
+// const searchUser = () => {
+//   const term = document.getElementById("searchInputUser").value.toLowerCase().trim();
+//   allUsers = term ? originalUsers.filter(user => 
+//       user.name.toLowerCase().includes(term) || 
+//       user.lastname.toLowerCase().includes(term) || 
+//       user.email.toLowerCase().includes(term)
+//   ) : [...originalUsers];
+//   currentPage = 1;
+//   renderUsersTable(currentPage);
+// };
+
+// // Search category
+const searchUser = () => {
   const term = document.getElementById("searchInput").value.toLowerCase().trim();
-  console.log("Buscando:", term);
-
-  if (!term) {
-    allUsers = [...originalUsers];
-  } else {
-    allUsers = originalUsers.filter(user =>
-      user.name.toLowerCase().includes(term) ||
-      user.lastname.toLowerCase().includes(term) ||
-      user.email.toLowerCase().includes(term)
-    );
-  }
-
+  allUsers = term ? originalUsers.filter(u => u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)) : [...originalUsers];
   currentPage = 1;
   renderUsersTable(currentPage);
 };
@@ -373,14 +370,14 @@ const hideForms = () => {
 
 // Eventos
 document.addEventListener("DOMContentLoaded", () => {
-  listUsers();
+  listUsers();;
   document.getElementById("mobileAddButton").onclick = showRegisterForm;
   document.getElementById("registerButton").onclick = registerUser;
   document.getElementById("cancelEditButton").onclick = () => {
-    document.getElementById("editForm").reset();
-    document.getElementById("editFormSection").style.display = "none";
+  document.getElementById("editForm").reset();
+  document.getElementById("editFormSection").style.display = "none";
+  document.getElementById("searchInput").addEventListener("keyup", searchUser);
   };
-  document.getElementById("searchInput").addEventListener("keyup", buscarUsuario);
 });
 
 // Funciones globales

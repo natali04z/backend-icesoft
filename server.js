@@ -8,7 +8,6 @@ import roleRoutes from "./routes/role.routes.js";
 import authRoutes from "./routes/auth.routes.js"
 import salesRoutes from './routes/sales.routes.js'
 import customerRoutes from "./routes/customer.routes.js";
-import quotationRoutes from "./routes/quotation.routes.js";
 import reportsRoutes from "./routes/reports.routes.js";
 import branchesRoutes from "./routes/branches.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -32,8 +31,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/roles", roleRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/sales", salesRoutes);
-app.use("/api/customers", customerRoutes)
-app.use("/api/quotations", quotationRoutes);
+app.use("/api/customers", customerRoutes);
 app.use("/api/reports", reportsRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/products", productRoutes);

@@ -134,122 +134,20 @@
 </header> 
 <html lang="es">
 <head>
+   
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ICESOFT - Dashboard</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: Arial, sans-serif;
-        }
-        
-        body {
-            display: flex;
-            min-height: 100vh;
-            background-color: #f5f5f5;
-        }
-        
-        .sidebar {
-            width: 250px;
-            background-color: #1a2434;
-            color: white;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        .logo-container {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            border-bottom: 1px solid #2c3e50;
-        }
-        
-        .logo {
-            width: 50px;
-            height: 50px;
-        }
-        
-        .brand-name {
-            margin-left: 10px;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        
-        .menu {
-            display: flex;
-            flex-direction: column;
-            padding: 20px 0;
-        }
-        
-        .menu-item {
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .menu-item:hover {
-            background-color: #2c3e50;
-        }
-        
-        .menu-item.active {
-            background-color: #2c3e50;
-            border-left: 4px solid #3498db;
-        }
-        
-        .menu-item i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
-        }
-        
-        .menu-item span {
-            font-size: 16px;
-        }
-        
-        .content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
+        *         
         .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 10px;
-            border-bottom: 1px solid #ddd;
         }
-        
-        .page-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-        }
-        
-        .user-info {
-            display: flex;
-            align-items: center;
-        }
-        
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: #3498db;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-        
+
         .widgets-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -387,61 +285,6 @@
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <div class="logo-container">
-            <div class="logo">
-                <svg viewBox="0 0 50 50" fill="white">
-                    <circle cx="25" cy="15" r="10"/>
-                    <path d="M5,45 L25,20 L45,45 Z"/>
-                </svg>
-            </div>
-            <div class="brand-name">ICESOFT</div>
-        </div>
-        
-        <div class="menu">
-            <div class="menu-item active">
-                <i>📊</i>
-                <span>DASHBOARD</span>
-            </div>
-            <div class="menu-item">
-                <i>👤</i>
-                <span>USUARIO</span>
-            </div>
-            <div class="menu-item dropdown-menu">
-                <i>🛒</i>
-                <span>COMPRAS</span>
-                <button class="toggle-button">❯</button>
-                <div class="submenu">
-                    <div class="menu-item">
-                        <span>Nueva Compra</span>
-                    </div>
-                    <div class="menu-item">
-                        <span>Historial</span>
-                    </div>
-                    <div class="menu-item">
-                        <span>Proveedores</span>
-                    </div>
-                </div>
-            </div>
-            <div class="menu-item dropdown-menu">
-                <i>💰</i>
-                <span>VENTAS</span>
-                <button class="toggle-button">❯</button>
-                <div class="submenu">
-                    <div class="menu-item">
-                        <span>Nueva Venta</span>
-                    </div>
-                    <div class="menu-item">
-                        <span>Historial</span>
-                    </div>
-                    <div class="menu-item">
-                        <span>Clientes</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
     <div class="content">
         <div class="header">
             <div class="page-title">Dashboard</div>

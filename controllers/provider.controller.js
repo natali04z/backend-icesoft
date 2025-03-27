@@ -27,7 +27,7 @@ export const getProviders = async (req, res) => {
 // Get provider by ID
 export const getOneProvider = async (req, res) => {
     try {
-        const provider = await Provider.findOne({ id: req.params.id });
+        const provider = await Provider.findById(req.params.id);
 
         if (!provider) {
             return res.status(404).json({ message: "Provider not found" });
@@ -109,8 +109,8 @@ export const putProvider = async (req, res) => {
             return res.status(400).json({ message: "Status must be 'active' or 'inactive'" });
         }
 
-        const updatedProvider = await Provider.findOneAndUpdate(
-            { id: req.params.id },
+        const updatedProvider = await Provider.findByIdAndUpdate(
+            req.params.id,  // Aquí corregimos el filtro
             req.body,
             { new: true, runValidators: true }
         );
@@ -129,8 +129,7 @@ export const putProvider = async (req, res) => {
 // Delete a provider
 export const deleteProvider = async (req, res) => {
     try {
-        const deletedProvider = await Provider.findOneAndDelete({ id: req.params.id });
-
+        const deletedProvider = await Provider.findByIdAndDelete(req.params.id);
         if (!deletedProvider) {
             return res.status(404).json({ message: "Provider not found" });
         }

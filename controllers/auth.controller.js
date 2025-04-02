@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 // Register user
+
 export const registerUser = async (req, res) => {
     try {
         const { name, lastname, contact_number, email, password, role } = req.body;
@@ -113,7 +114,6 @@ export const getAuthenticatedUser = async (req, res) => {
 };
 
 // RESET/CHANGE PASSWORD (without email link)
-// Cambio de contraseña con token
 export const changeOwnPassword = async (req, res) => {
     try {
         const { newPassword } = req.body;

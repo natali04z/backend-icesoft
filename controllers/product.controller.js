@@ -102,7 +102,7 @@ export const postProduct = async (req, res) => {
         const newProduct = new Product({
             id,
             name,
-            category, // ahora ya es el ID
+            category,
             price,
             stock,
             minimumStock,

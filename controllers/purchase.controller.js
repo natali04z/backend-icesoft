@@ -157,10 +157,10 @@ export const postPurchase = async (req, res) => {
         const newPurchase = new Purchase({
             id,
             product,
+            purchaseDate: purchaseDate || new Date(),
             provider,
             total,
-            details,
-            purchaseDate: purchaseDate || new Date()
+            details
         });
 
         await newPurchase.save();

@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import Purchase from "../models/purchase.js";
 import Product from "../models/product.js";
 import Provider from "../models/provider.js";
+import { checkPermission } from "../utils/permissions.js";
 
 // Function to generate purchase ID
 async function generatePurchaseId() {
@@ -14,28 +16,93 @@ async function generatePurchaseId() {
     return `Pu${nextNumber}`;
 }
 
+// Validate purchase data
+function validatePurchaseData(data, isUpdate = false) {
+    const errors = [];
+    
+    // Only validate required fields if it's not an update
+    if (!isUpdate) {
+        if (!data.product) errors.push("Product is required");
+        if (!data.provider) errors.push("Provider is required");
+        if (data.total === undefined) errors.push("Total is required");
+        if (!data.details) errors.push("Details are required");
+    }
+    
+    // Validate product ID if provided
+    if (data.product && !mongoose.Types.ObjectId.isValid(data.product)) {
+        errors.push("Invalid product ID format");
+    }
+    
+    // Validate provider ID if provided
+    if (data.provider && !mongoose.Types.ObjectId.isValid(data.provider)) {
+        errors.push("Invalid provider ID format");
+    }
+    
+    // Validate numeric fields
+    if (data.total !== undefined) {
+        if (typeof data.total !== "number") {
+            errors.push("Total must be a number");
+        } else if (data.total <= 0) {
+            errors.push("Total must be a positive number");
+        }
+    }
+    
+    // Validate date if provided
+    if (data.purchaseDate !== undefined) {
+        const dateRegex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?Z)?$/;
+        if (!dateRegex.test(data.purchaseDate) && !(data.purchaseDate instanceof Date)) {
+            errors.push("Invalid date format. Use YYYY-MM-DD or ISO format");
+        }
+    }
+    
+    // Validate string fields
+    if (data.details !== undefined && (typeof data.details !== "string" || data.details.trim() === "")) {
+        errors.push("Details must be a non-empty string");
+    }
+    
+    return errors;
+}
+
 // GET: Retrieve all purchases
 export const getPurchases = async (req, res) => {
-    try {
-        console.log("Fetching all purchases...");
-        const purchases = await Purchase.find()
-            .select("id total details purchaseDate")
-            .populate("product", "name price")
-            .populate("provider", "name contact_number");
+    try {        
+        if (!checkPermission(req.user.role, "view_purchases")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
 
-        console.log("Purchases retrieved:", purchases.length);
-        res.status(200).json({ message: "Purchases retrieved successfully", data: purchases });
+        const purchases = await Purchase.find()
+            .select("id total details purchaseDate product provider")
+            .populate("product", "name")
+            .populate("provider", "name");
+
+        // Format the date in the response
+        const Purchases = purchases.map(purchase => {
+            const purchaseObj = purchase.toObject();
+            if (purchaseObj.purchaseDate) {
+                purchaseObj.purchaseDate = new Date(purchaseObj.purchaseDate).toISOString().split('T')[0];
+            }
+            return purchaseObj;
+        });
+
+        res.status(200).json(Purchases);
     } catch (error) {
         console.error("Error fetching purchases:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 // GET: Retrieve a single purchase by ID
 export const getPurchaseById = async (req, res) => {
     try {
+        if (!checkPermission(req.user.role, "view_purchases_id")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
-        console.log(`Fetching purchase with ID: ${id}`);
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid purchase ID format" });
+        }
 
         const purchase = await Purchase.findById(id)
             .select("id total details purchaseDate")
@@ -43,40 +110,44 @@ export const getPurchaseById = async (req, res) => {
             .populate("provider", "name contact_number");
 
         if (!purchase) {
-            console.warn(`Purchase with ID ${id} not found`);
             return res.status(404).json({ message: "Purchase not found" });
         }
 
-        console.log("Purchase retrieved:", purchase);
-        res.status(200).json({ message: "Purchase retrieved successfully", data: purchase });
+        // Format the date in the response
+        const formattedPurchase = purchase.toObject();
+        if (formattedPurchase.purchaseDate) {
+            formattedPurchase.purchaseDate = new Date(formattedPurchase.purchaseDate).toISOString().split('T')[0];
+        }
+
+        res.status(200).json(formattedPurchase);
     } catch (error) {
         console.error("Error fetching purchase:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 // POST: Create new purchase
 export const postPurchase = async (req, res) => {
     try {
-        const { product, provider, total, details } = req.body;
-
-        if (!product || !provider || total === undefined || !details) {
-            return res.status(400).json({ message: "All fields are required" });
+        if (!checkPermission(req.user.role, "create_purchases")) {
+            return res.status(403).json({ message: "Unauthorized access" });
         }
 
-        if (!mongoose.Types.ObjectId.isValid(product)) {
-            return res.status(400).json({ message: "Invalid product ID" });
+        const { product, provider, total, details, purchaseDate } = req.body;
+        
+        // Validate input data
+        const validationErrors = validatePurchaseData(req.body);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({ message: "Validation failed", errors: validationErrors });
         }
 
-        if (!mongoose.Types.ObjectId.isValid(provider)) {
-            return res.status(400).json({ message: "Invalid provider ID" });
-        }
-
+        // Check if product exists
         const existingProduct = await Product.findById(product);
         if (!existingProduct) {
             return res.status(404).json({ message: "Product not found" });
         }
 
+        // Check if provider exists
         const existingProvider = await Provider.findById(provider);
         if (!existingProvider) {
             return res.status(404).json({ message: "Provider not found" });
@@ -88,13 +159,28 @@ export const postPurchase = async (req, res) => {
             product,
             provider,
             total,
-            details
+            details,
+            purchaseDate: purchaseDate || new Date()
         });
 
         await newPurchase.save();
-        res.status(201).json({ message: "Purchase created successfully", purchase: newPurchase });
+        
+        // Format the date in the response
+        const formattedPurchase = newPurchase.toObject();
+        if (formattedPurchase.purchaseDate) {
+            formattedPurchase.purchaseDate = new Date(formattedPurchase.purchaseDate).toISOString().split('T')[0];
+        }
+        
+        res.status(201).json({ message: "Purchase created successfully", purchase: formattedPurchase });
     } catch (error) {
         console.error("Error creating purchase:", error);
+        
+        // Handle Mongoose validation errors
+        if (error.name === 'ValidationError') {
+            const errors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ message: "Validation failed", errors });
+        }
+        
         res.status(500).json({ message: "Server error" });
     }
 };
@@ -102,19 +188,27 @@ export const postPurchase = async (req, res) => {
 // PUT: Update an existing purchase
 export const updatePurchase = async (req, res) => {
     try {
+        if (!checkPermission(req.user.role, "edit_purchases")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
         const { product, provider, purchaseDate, total, details } = req.body;
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: "Invalid purchase ID" });
+            return res.status(400).json({ message: "Invalid purchase ID format" });
+        }
+
+        // Validate input data (with isUpdate flag)
+        const validationErrors = validatePurchaseData(req.body, true);
+        if (validationErrors.length > 0) {
+            return res.status(400).json({ message: "Validation failed", errors: validationErrors });
         }
 
         let updateFields = {};
 
+        // Check and update product if provided
         if (product) {
-            if (!mongoose.Types.ObjectId.isValid(product)) {
-                return res.status(400).json({ message: "Invalid product ID" });
-            }
             const existingProduct = await Product.findById(product);
             if (!existingProduct) {
                 return res.status(404).json({ message: "Product not found" });
@@ -122,10 +216,8 @@ export const updatePurchase = async (req, res) => {
             updateFields.product = product;
         }
 
+        // Check and update provider if provided
         if (provider) {
-            if (!mongoose.Types.ObjectId.isValid(provider)) {
-                return res.status(400).json({ message: "Invalid provider ID" });
-            }
             const existingProvider = await Provider.findById(provider);
             if (!existingProvider) {
                 return res.status(404).json({ message: "Provider not found" });
@@ -133,20 +225,21 @@ export const updatePurchase = async (req, res) => {
             updateFields.provider = provider;
         }
 
-        if (purchaseDate) updateFields.purchaseDate = purchaseDate;
-        if (total !== undefined) {
-            if (typeof total !== "number" || total <= 0) {
-                return res.status(400).json({ message: "Total must be a positive number" });
-            }
-            updateFields.total = total;
+        // Update other fields if provided
+        if (purchaseDate !== undefined) updateFields.purchaseDate = purchaseDate;
+        if (total !== undefined) updateFields.total = total;
+        if (details !== undefined) updateFields.details = details;
+        
+        // Check if there are fields to update
+        if (Object.keys(updateFields).length === 0) {
+            return res.status(400).json({ message: "No valid fields to update" });
         }
-        if (details) updateFields.details = details;
 
         const updatedPurchase = await Purchase.findByIdAndUpdate(id, updateFields, {
             new: true,
             runValidators: true
         })
-            .select("product provider purchaseDate total details")
+            .select("id product provider purchaseDate total details")
             .populate("product", "name")
             .populate("provider", "name");
 
@@ -154,9 +247,22 @@ export const updatePurchase = async (req, res) => {
             return res.status(404).json({ message: "Purchase not found" });
         }
 
-        res.status(200).json({ message: "Purchase updated successfully", purchase: updatedPurchase });
+        // Format the date in the response
+        const formattedPurchase = updatedPurchase.toObject();
+        if (formattedPurchase.purchaseDate) {
+            formattedPurchase.purchaseDate = new Date(formattedPurchase.purchaseDate).toISOString().split('T')[0];
+        }
+
+        res.status(200).json({ message: "Purchase updated successfully", purchase: formattedPurchase });
     } catch (error) {
         console.error("Error updating purchase:", error);
+        
+        // Handle Mongoose validation errors
+        if (error.name === 'ValidationError') {
+            const errors = Object.values(error.errors).map(err => err.message);
+            return res.status(400).json({ message: "Validation failed", errors });
+        }
+        
         res.status(500).json({ message: "Server error" });
     }
 };
@@ -164,20 +270,25 @@ export const updatePurchase = async (req, res) => {
 // DELETE: Remove a purchase by ID
 export const deletePurchase = async (req, res) => {
     try {
+        if (!checkPermission(req.user.role, "delete_purchases")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { id } = req.params;
-        console.log(`Deleting purchase with ID: ${id}`);
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid purchase ID format" });
+        }
 
         const deletedPurchase = await Purchase.findByIdAndDelete(id);
 
         if (!deletedPurchase) {
-            console.warn(`Purchase with ID ${id} not found`);
             return res.status(404).json({ message: "Purchase not found" });
         }
 
-        console.log("Purchase deleted successfully");
         res.status(200).json({ message: "Purchase deleted successfully" });
     } catch (error) {
         console.error("Error deleting purchase:", error);
-        res.status(500).json({ message: "Server error", error: error.message });
+        res.status(500).json({ message: "Server error" });
     }
 };

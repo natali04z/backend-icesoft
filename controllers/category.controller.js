@@ -1,5 +1,6 @@
 import Category from "../models/category.js";
 import mongoose from "mongoose";
+import { checkPermission } from "../utils/permissions.js";
 
 async function generateCategoryId() {
     const lastCategory = await Category.findOne().sort({ id: -1 });
@@ -16,22 +17,35 @@ async function generateCategoryId() {
 // Get all categories
 export const getCategories = async (req, res) => {
     try {
-        const categories = await Category.find();
-        res.status(200).json({ categories });
+        if (!checkPermission(req.user.role, "view_categories")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
+        const categories = await Category.find()
+            .select("id name description status");
+
+        res.status(200).json(categories);
     } catch (error) {
         console.error("Error fetching categories:", error);
-        res.status(500).json({ message: "Error fetching categories" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 // Get category by ID
 export const getOneCategory = async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        if (!checkPermission(req.user.role, "view_categories_id")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid category ID" });
         }
 
-        const category = await Category.findById(req.params.id);
+        const category = await Category.findById(id)
+            .select("id name description status");
 
         if (!category) {
             return res.status(404).json({ message: "Category not found" });
@@ -40,13 +54,17 @@ export const getOneCategory = async (req, res) => {
         res.status(200).json(category);
     } catch (error) {
         console.error("Error fetching category:", error);
-        res.status(500).json({ message: "Error fetching category" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 // Create a new category
 export const postCategory = async (req, res) => {
     try {
+        if (!checkPermission(req.user.role, "create_categories")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
         const { name, description, status } = req.body;
 
         if (!name || !description || !status) {
@@ -79,22 +97,26 @@ export const postCategory = async (req, res) => {
         });
 
         await newCategory.save();
-        res.status(201).json({ message: "Category created successfully", id: newCategory.id, ...newCategory._doc });
+        res.status(201).json({ message: "Category created successfully", category: newCategory });
     } catch (error) {
         console.error("Error creating category:", error);
-        res.status(500).json({ message: "Error creating category" });
+        res.status(500).json({ message: "Server error" });
     }
 };
-
 
 // Update a category
 export const putCategory = async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: "Invalid category ID" });
+        if (!checkPermission(req.user.role, "update_categories")) {
+            return res.status(403).json({ message: "Unauthorized access" });
         }
 
+        const { id } = req.params;
         const { name, description, status } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({ message: "Invalid category ID" });
+        }
 
         if (name && (name.length < 3 || name.length > 50)) {
             return res.status(400).json({ message: "Category name must be between 3 and 50 characters" });
@@ -111,7 +133,7 @@ export const putCategory = async (req, res) => {
         if (name) {
             const existingCategory = await Category.findOne({
                 name: name.trim().toLowerCase(),
-                _id: { $ne: req.params.id }
+                _id: { $ne: id }
             });
 
             if (existingCategory) {
@@ -119,35 +141,42 @@ export const putCategory = async (req, res) => {
             }
         }
 
+        const updateData = {};
+        if (name) updateData.name = name.trim();
+        if (description) updateData.description = description;
+        if (status) updateData.status = status;
+
         const updatedCategory = await Category.findByIdAndUpdate(
-            req.params.id,
-            {
-                ...(name && { name: name.trim() }),
-                ...(description && { description }),
-                ...(status && { status })
-            },
+            id,
+            updateData,
             { new: true, runValidators: true }
-        );
+        ).select("id name description status");
 
         if (!updatedCategory) {
             return res.status(404).json({ message: "Category not found" });
         }
 
-        res.status(200).json(updatedCategory);
+        res.status(200).json({ message: "Category updated successfully", category: updatedCategory });
     } catch (error) {
         console.error("Error updating category:", error);
-        res.status(500).json({ message: "Error updating category" });
+        res.status(500).json({ message: "Server error" });
     }
 };
 
 // Delete a category
 export const deleteCategory = async (req, res) => {
     try {
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+        if (!checkPermission(req.user.role, "delete_categories")) {
+            return res.status(403).json({ message: "Unauthorized access" });
+        }
+
+        const { id } = req.params;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({ message: "Invalid category ID" });
         }
 
-        const deletedCategory = await Category.findByIdAndDelete(req.params.id);
+        const deletedCategory = await Category.findByIdAndDelete(id);
 
         if (!deletedCategory) {
             return res.status(404).json({ message: "Category not found" });
@@ -156,6 +185,6 @@ export const deleteCategory = async (req, res) => {
         res.status(200).json({ message: "Category deleted successfully" });
     } catch (error) {
         console.error("Error deleting category:", error);
-        res.status(500).json({ message: "Error deleting category" });
+        res.status(500).json({ message: "Server error" });
     }
 };

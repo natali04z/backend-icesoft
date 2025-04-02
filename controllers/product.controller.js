@@ -23,8 +23,8 @@ export const getProducts = async (req, res) => {
         }
 
         const products = await Product.find()
-            .select("id name price stock minimumStock status category") // ← incluimos 'category'
-            .populate("category", "name"); // ← trae solo el nombre de la categoría
+            .select("id name price stock minimumStock status category")
+            .populate("category", "name"); 
 
         res.status(200).json(products);
     } catch (error) {
@@ -36,7 +36,7 @@ export const getProducts = async (req, res) => {
 // Get product by ID
 export const getProductById = async (req, res) => {
     try {
-        if (!checkPermission(req.user.role, "view_products")) {
+        if (!checkPermission(req.user.role, "view_products_id")) {
             return res.status(403).json({ message: "Unauthorized access" });
         }
 

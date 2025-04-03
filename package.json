@@ -7,9 +7,6 @@
     "start": "node index.js",
     "dev": "node --watch index.js"
   },
-  "engines": {
-    "node": ">=18.x"
-  },
   "dependencies": {
     "backend-icesoft": "file:",
     "bcryptjs": "^3.0.2",

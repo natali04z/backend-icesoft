@@ -1,5 +1,5 @@
 import { validationResult } from "express-validator";
-import Customer from "../models/Customer.js";
+import Customer from "../models/customer";
 
 // Obtener todos los clientes
 export const getCustomers = async (req, res) => {
@@ -13,7 +13,7 @@ export const getCustomers = async (req, res) => {
 
 // Crear un nuevo cliente (con validaciones de express-validator)
 export const createCustomer = async (req, res) => {
-  const errors = validationResult(req);  // Captura los errores de validación
+  const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
